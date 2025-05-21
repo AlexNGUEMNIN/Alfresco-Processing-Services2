@@ -1,0 +1,263 @@
+<div class="admin-container fade-in">
+  <div class="admin-header">
+    <h2>Administration</h2>
+    <div class="actions">
+      <button class="btn-icon refresh-btn" (click)="loadData()">
+        <span class="material-icons">refresh</span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="tab-navigation">
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'users'"
+      (click)="setActiveTab('users')"
+    >
+      Users & Permissions
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'settings'"
+      (click)="setActiveTab('settings')"
+    >
+      System Settings
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'audit'"
+      (click)="setActiveTab('audit')"
+    >
+      Audit Log
+    </button>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading data...</p>
+  </div>
+  
+  <div *ngIf="!loading" class="tab-content">
+    <!-- Users Tab -->
+    <div *ngIf="activeTab === 'users'" class="users-tab">
+      <div class="action-bar">
+        <button class="btn btn-primary">
+          <span class="material-icons">person_add</span>
+          Add User
+        </button>
+        
+        <div class="search-box">
+          <span class="material-icons">search</span>
+          <input type="text" placeholder="Search users...">
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Last Login</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.username }}</td>
+              <td>{{ user.firstName }} {{ user.lastName }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'badge-error': user.role === 'admin',
+                  'badge-warning': user.role === 'supervisor',
+                  'badge-info': user.role === 'operator'
+                }">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td>{{ user.lastLogin | date:'medium' }}</td>
+              <td>
+                <span class="badge" [ngClass]="user.isActive ? 'badge-success' : 'badge-error'">
+                  {{ user.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-icon">
+                    <span class="material-icons" title="Edit User">edit</span>
+                  </button>
+                  <button class="btn-icon">
+                    <span class="material-icons" title="Delete User">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Settings Tab -->
+    <div *ngIf="activeTab === 'settings'" class="settings-tab">
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>Alert Thresholds</h3>
+          
+          <div class="settings-group">
+            <div class="form-group">
+              <label>Abandoned Process Warning Level</label>
+              <div class="form-control-with-suffix">
+                <input type="number" value="5" min="1" max="100">
+                <span class="suffix">processes</span>
+              </div>
+              <small>Trigger warning when reaching this number of abandoned processes per day</small>
+            </div>
+            
+            <div class="form-group">
+              <label>Abandoned Process Critical Level</label>
+              <div class="form-control-with-suffix">
+                <input type="number" value="10" min="1" max="100">
+                <span class="suffix">processes</span>
+              </div>
+              <small>Trigger critical alert when reaching this number of abandoned processes per day</small>
+            </div>
+            
+            <div class="form-group">
+              <label>Database Growth Warning</label>
+              <div class="form-control-with-suffix">
+                <input type="number" value="5" min="1" max="100">
+                <span class="suffix">% per week</span>
+              </div>
+              <small>Trigger warning when database growth exceeds this percentage per week</small>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary">Save Thresholds</button>
+        </div>
+        
+        <div class="settings-card">
+          <h3>Automatic Purge Settings</h3>
+          
+          <div class="settings-group">
+            <div class="form-group">
+              <label>Purge Terminated Processes Older Than</label>
+              <div class="form-control-with-suffix">
+                <input type="number" value="30" min="1" max="365">
+                <span class="suffix">days</span>
+              </div>
+              <small>Automatically remove terminated processes that are older than specified days</small>
+            </div>
+            
+            <div class="form-group">
+              <label>Purge Abandoned Processes Older Than</label>
+              <div class="form-control-with-suffix">
+                <input type="number" value="60" min="1" max="365">
+                <span class="suffix">days</span>
+              </div>
+              <small>Automatically remove abandoned processes that are older than specified days</small>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox-control">
+                <input type="checkbox" id="enablePurge" checked>
+                <label for="enablePurge">Enable Automatic Purge</label>
+              </div>
+              <small>Schedule automatic purge to run daily at midnight</small>
+            </div>
+          </div>
+          
+          <div class="button-group">
+            <button class="btn btn-primary">Save Settings</button>
+            <button class="btn btn-secondary">Run Manual Purge</button>
+          </div>
+        </div>
+        
+        <div class="settings-card">
+          <h3>Email Notifications</h3>
+          
+          <div class="settings-group">
+            <div class="form-group">
+              <label>Admin Email</label>
+              <input type="email" value="admin@afriland.com">
+              <small>Primary contact for critical alerts</small>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox-control">
+                <input type="checkbox" id="enableCritical" checked>
+                <label for="enableCritical">Send Critical Alerts</label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox-control">
+                <input type="checkbox" id="enableWarning" checked>
+                <label for="enableWarning">Send Warning Alerts</label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox-control">
+                <input type="checkbox" id="enableDaily">
+                <label for="enableDaily">Send Daily Report</label>
+              </div>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary">Save Notification Settings</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Audit Log Tab -->
+    <div *ngIf="activeTab === 'audit'" class="audit-tab">
+      <div class="action-bar">
+        <div class="search-box">
+          <span class="material-icons">search</span>
+          <input type="text" placeholder="Search audit logs...">
+        </div>
+        
+        <div class="filter-controls">
+          <select>
+            <option value="">All Actions</option>
+            <option value="LOGIN">Login</option>
+            <option value="TERMINATE_PROCESS">Terminate Process</option>
+            <option value="RESTART_PROCESS">Restart Process</option>
+          </select>
+          
+          <button class="btn-text">
+            <span class="material-icons">filter_list</span>
+            More Filters
+          </button>
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>User</th>
+              <th>Action</th>
+              <th>Details</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of auditLogs">
+              <td>{{ log.timestamp | date:'medium' }}</td>
+              <td>{{ log.username }}</td>
+              <td>{{ log.action }}</td>
+              <td>{{ log.details }}</td>
+              <td>{{ log.ipAddress }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

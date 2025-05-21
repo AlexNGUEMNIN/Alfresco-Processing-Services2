@@ -1,0 +1,159 @@
+<div class="processes-container fade-in">
+  <div class="processes-header">
+    <h2>Process Management</h2>
+    <div class="actions">
+      <button class="btn-icon refresh-btn" (click)="loadProcesses()">
+        <span class="material-icons">refresh</span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="filter-section">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input 
+        type="text" 
+        placeholder="Search processes..." 
+        [(ngModel)]="filter.searchTerm" 
+        (input)="applyFilters()"
+      >
+    </div>
+    
+    <div class="filter-controls">
+      <select [(ngModel)]="filter.status" (change)="applyFilters()">
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="abandoned">Abandoned</option>
+        <option value="terminated">Terminated</option>
+      </select>
+      
+      <button class="btn-text" (click)="clearFilters()">
+        <span class="material-icons">clear</span>
+        Clear Filters
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading processes...</p>
+  </div>
+  
+  <div *ngIf="!loading" class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Start Date</th>
+          <th>Last Activity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let process of filteredProcesses" (click)="selectProcess(process)" [class.selected]="selectedProcess?.id === process.id">
+          <td>{{ process.id }}</td>
+          <td>{{ process.name }}</td>
+          <td>{{ process.type }}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusClass(process.status)">
+              {{ process.status }}
+            </span>
+          </td>
+          <td>{{ process.startDate | date:'medium' }}</td>
+          <td>{{ process.lastActivity | date:'medium' }}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon" *ngIf="process.status === 'abandoned'" (click)="restartProcess(process.id); $event.stopPropagation()">
+                <span class="material-icons" title="Restart Process">play_circle</span>
+              </button>
+              
+              <button class="btn-icon" *ngIf="process.status === 'active'" (click)="terminateProcess(process.id); $event.stopPropagation()">
+                <span class="material-icons" title="Terminate Process">stop_circle</span>
+              </button>
+              
+              <button class="btn-icon" (click)="selectProcess(process); $event.stopPropagation()">
+                <span class="material-icons" title="View Details">visibility</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div *ngIf="!loading && filteredProcesses.length === 0" class="empty-state">
+    <span class="material-icons">find_in_page</span>
+    <p>No processes found matching your criteria.</p>
+    <button class="btn btn-primary" (click)="clearFilters()">Clear Filters</button>
+  </div>
+  
+  <div *ngIf="selectedProcess" class="process-details-panel slide-in-left">
+    <div class="panel-header">
+      <h3>Process Details</h3>
+      <button class="btn-icon" (click)="closeProcessDetails()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    
+    <div class="panel-content">
+      <div class="detail-section">
+        <h4>Basic Information</h4>
+        <div class="detail-row">
+          <span class="label">ID:</span>
+          <span class="value">{{ selectedProcess.id }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Name:</span>
+          <span class="value">{{ selectedProcess.name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Type:</span>
+          <span class="value">{{ selectedProcess.type }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Status:</span>
+          <span class="badge" [ngClass]="getStatusClass(selectedProcess.status)">
+            {{ selectedProcess.status }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Start Date:</span>
+          <span class="value">{{ selectedProcess.startDate | date:'medium' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Last Activity:</span>
+          <span class="value">{{ selectedProcess.lastActivity | date:'medium' }}</span>
+        </div>
+      </div>
+      
+      <div class="detail-section">
+        <h4>Timeline</h4>
+        <div class="timeline-placeholder">
+          <p>Process timeline visualization will appear here</p>
+        </div>
+      </div>
+      
+      <div class="detail-section">
+        <h4>Variables</h4>
+        <div class="variables-placeholder">
+          <p>Process variables will appear here</p>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="btn btn-primary" *ngIf="selectedProcess.status === 'abandoned'" (click)="restartProcess(selectedProcess.id)">
+          <span class="material-icons">play_circle</span>
+          Restart Process
+        </button>
+        
+        <button class="btn btn-error" *ngIf="selectedProcess.status === 'active'" (click)="terminateProcess(selectedProcess.id)">
+          <span class="material-icons">stop_circle</span>
+          Terminate Process
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

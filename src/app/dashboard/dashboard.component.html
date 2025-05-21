@@ -1,0 +1,94 @@
+<div class="dashboard-container fade-in">
+  <div class="dashboard-header">
+    <h2>Dashboard Overview</h2>
+    <div class="actions">
+      <button class="btn btn-primary" (click)="analyzeAbandonedProcesses()">
+        <span class="material-icons">analytics</span>
+        Analyze Abandoned Processes
+      </button>
+      
+      <button class="btn-icon refresh-btn" (click)="refreshData()">
+        <span class="material-icons">refresh</span>
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+  
+  <div *ngIf="!loading && processStats" class="cards-container">
+    <div class="status-card-grid">
+      <app-status-card 
+        title="Active Processes" 
+        [value]="processStats.active" 
+        icon="play_circle"
+        color="primary">
+      </app-status-card>
+      
+      <app-status-card 
+        title="Abandoned Processes" 
+        [value]="processStats.abandoned" 
+        icon="error"
+        color="error">
+      </app-status-card>
+      
+      <app-status-card 
+        title="Terminated Processes" 
+        [value]="processStats.terminated" 
+        icon="check_circle"
+        color="success">
+      </app-status-card>
+      
+      <app-status-card 
+        title="Total Processes" 
+        [value]="processStats.total" 
+        icon="category"
+        color="secondary">
+      </app-status-card>
+    </div>
+    
+    <div class="charts-container">
+      <div class="chart-card">
+        <h3>Abandoned Process Trend</h3>
+        <div class="chart-placeholder">
+          <p>Trend chart visualization will appear here</p>
+          <p class="chart-description">Shows the daily trend of abandoned processes over time</p>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>Database Growth Impact</h3>
+        <div class="chart-placeholder">
+          <p>Database growth chart will appear here</p>
+          <p class="chart-description">Shows the impact of abandoned processes on database size</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="alert-section">
+      <div class="alert alert-critical">
+        <span class="material-icons">warning</span>
+        <div class="alert-content">
+          <h4>Critical Alert</h4>
+          <p>12 processes abandoned in the last 24 hours, causing significant database growth.</p>
+        </div>
+        <button class="btn-link">
+          <span class="material-icons">arrow_forward</span>
+        </button>
+      </div>
+      
+      <div class="alert alert-warning">
+        <span class="material-icons">info</span>
+        <div class="alert-content">
+          <h4>Performance Warning</h4>
+          <p>Database table 'ACT_HI_VARINST' showing abnormal growth rate (8.2% in the last 7 days).</p>
+        </div>
+        <button class="btn-link">
+          <span class="material-icons">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,146 @@
+<div class="database-container fade-in">
+  <div class="database-header">
+    <h2>Database Supervision</h2>
+    <div class="actions">
+      <button class="btn-icon refresh-btn" (click)="loadDatabaseData()">
+        <span class="material-icons">refresh</span>
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading database information...</p>
+  </div>
+  
+  <div *ngIf="!loading" class="metrics-summary">
+    <div class="summary-card">
+      <div class="summary-content">
+        <div class="summary-section">
+          <h3>Database Overview</h3>
+          <p>Monitor key database tables affected by APS processes.</p>
+        </div>
+        
+        <div class="summary-section">
+          <div class="summary-stats">
+            <div class="stat">
+              <span class="label">Size:</span>
+              <span class="value">1,256.4 MB</span>
+            </div>
+            <div class="stat">
+              <span class="label">Tables:</span>
+              <span class="value">5</span>
+            </div>
+            <div class="stat">
+              <span class="label">Growth Rate:</span>
+              <span class="value critical">7.8%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="summary-section">
+          <button class="btn btn-primary">
+            <span class="material-icons">trending_up</span>
+            View Growth Analysis
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="!loading" class="tables-section">
+    <h3>Key Tables</h3>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Table Name</th>
+            <th>Size (MB)</th>
+            <th>Rows</th>
+            <th>Growth (%)</th>
+            <th>Last Updated</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let table of tables">
+            <td>{{ table.name }}</td>
+            <td>{{ table.size | number:'1.1-1' }}</td>
+            <td>{{ table.rows | number }}</td>
+            <td [ngClass]="{'critical': table.growth > 10, 'warning': table.growth > 5 && table.growth <= 10}">
+              {{ table.growth | number:'1.1-1' }}%
+            </td>
+            <td>{{ table.lastUpdated | date:'medium' }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(table.status)">
+                {{ table.status }}
+              </span>
+            </td>
+            <td>
+              <button 
+                class="btn btn-sm" 
+                [disabled]="optimizingTable === table.name"
+                (click)="optimizeTable(table.name)"
+              >
+                <span class="material-icons" *ngIf="optimizingTable !== table.name">build</span>
+                <span class="spinner" *ngIf="optimizingTable === table.name"></span>
+                {{ optimizingTable === table.name ? 'Optimizing...' : 'Optimize' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div *ngIf="!loading" class="growth-chart-section">
+    <h3>Table Growth Trend</h3>
+    
+    <div class="chart-card">
+      <div class="chart-placeholder">
+        <p>Growth trend chart will appear here</p>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="!loading && slowQueries.length > 0" class="queries-section">
+    <h3>Slow Queries</h3>
+    
+    <div class="queries-list">
+      <div *ngFor="let query of slowQueries" class="query-card" [ngClass]="getStatusClass(query.status)">
+        <div class="query-header">
+          <h4>Query {{ query.id }}</h4>
+          <span class="badge" [ngClass]="getStatusClass(query.status)">
+            {{ query.status }}
+          </span>
+        </div>
+        
+        <div class="query-details">
+          <code class="query-code">{{ query.query }}</code>
+          
+          <div class="query-stats">
+            <div class="stat">
+              <span class="label">Avg. Execution Time:</span>
+              <span class="value">{{ query.avgExecutionTime | number:'1.0-0' }} ms</span>
+            </div>
+            <div class="stat">
+              <span class="label">Executions:</span>
+              <span class="value">{{ query.executions }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">Last Executed:</span>
+              <span class="value">{{ query.lastExecuted | date:'medium' }}</span>
+            </div>
+          </div>
+          
+          <div class="query-actions">
+            <button class="btn btn-sm">Optimize Query</button>
+            <button class="btn btn-sm btn-outline">View Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

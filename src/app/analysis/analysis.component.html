@@ -1,0 +1,333 @@
+<div class="analysis-container fade-in">
+  <div class="analysis-header">
+    <h2>Process Analysis</h2>
+    <div class="actions">
+      <button class="btn btn-primary" (click)="runAnalysis()">
+        <span class="material-icons">play_arrow</span>
+        Run Analysis
+      </button>
+    </div>
+  </div>
+  
+  <div class="tab-navigation">
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'overview'"
+      (click)="setActiveTab('overview')"
+    >
+      Overview
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'causes'"
+      (click)="setActiveTab('causes')"
+    >
+      Root Causes
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'impact'"
+      (click)="setActiveTab('impact')"
+    >
+      Performance Impact
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'recommendations'"
+      (click)="setActiveTab('recommendations')"
+    >
+      Recommendations
+    </button>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Analyzing process data...</p>
+  </div>
+  
+  <div *ngIf="!loading" class="tab-content">
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="overview-tab">
+      <div class="analysis-card">
+        <h3>Abandoned Process Distribution</h3>
+        <div class="chart-placeholder">
+          <p>Process distribution chart will appear here</p>
+        </div>
+      </div>
+      
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h4>Total Abandonments</h4>
+          <div class="metric-value">87</div>
+          <div class="metric-trend positive">
+            <span class="material-icons">trending_down</span>
+            <span>8% decrease from previous period</span>
+          </div>
+        </div>
+        
+        <div class="metric-card">
+          <h4>Average Duration</h4>
+          <div class="metric-value">23.5 hours</div>
+          <div class="metric-trend negative">
+            <span class="material-icons">trending_up</span>
+            <span>5% increase from previous period</span>
+          </div>
+        </div>
+        
+        <div class="metric-card">
+          <h4>Abandonment Rate</h4>
+          <div class="metric-value">12.4%</div>
+          <div class="metric-trend positive">
+            <span class="material-icons">trending_down</span>
+            <span>2.1% decrease from previous period</span>
+          </div>
+        </div>
+        
+        <div class="metric-card">
+          <h4>Most Affected Process</h4>
+          <div class="metric-value">Loan Application</div>
+          <div class="metric-trend neutral">
+            <span>28 abandonments</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="analysis-card">
+        <h3>Historical Trend</h3>
+        <div class="chart-placeholder">
+          <p>Historical trend chart will appear here</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Root Causes Tab -->
+    <div *ngIf="activeTab === 'causes'" class="causes-tab">
+      <div class="analysis-card">
+        <h3>Common Causes of Abandonment</h3>
+        <div class="chart-placeholder">
+          <p>Pareto chart of causes will appear here</p>
+        </div>
+      </div>
+      
+      <div class="causes-list">
+        <div class="cause-item">
+          <div class="cause-header">
+            <h4>Database Timeout</h4>
+            <span class="badge badge-error">Critical</span>
+          </div>
+          <p>Database connection timeout during high-volume transaction processing. Occurs most frequently between 9-11 AM.</p>
+          <div class="cause-stats">
+            <div class="stat">
+              <span class="label">Frequency:</span>
+              <span class="value">42%</span>
+            </div>
+            <div class="stat">
+              <span class="label">Affected Processes:</span>
+              <span class="value">Loan Application, Account Opening</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="cause-item">
+          <div class="cause-header">
+            <h4>Validation Error</h4>
+            <span class="badge badge-warning">Medium</span>
+          </div>
+          <p>Process variable validation errors during form submission causing process to stall.</p>
+          <div class="cause-stats">
+            <div class="stat">
+              <span class="label">Frequency:</span>
+              <span class="value">27%</span>
+            </div>
+            <div class="stat">
+              <span class="label">Affected Processes:</span>
+              <span class="value">Customer Onboarding, Credit Card Application</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="cause-item">
+          <div class="cause-header">
+            <h4>External Service Failure</h4>
+            <span class="badge badge-warning">Medium</span>
+          </div>
+          <p>Failed integration with external credit check service resulting in abandoned processes.</p>
+          <div class="cause-stats">
+            <div class="stat">
+              <span class="label">Frequency:</span>
+              <span class="value">18%</span>
+            </div>
+            <div class="stat">
+              <span class="label">Affected Processes:</span>
+              <span class="value">Loan Application, Credit Card Application</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Performance Impact Tab -->
+    <div *ngIf="activeTab === 'impact'" class="impact-tab">
+      <div class="analysis-card">
+        <h3>Database Impact</h3>
+        <div class="chart-placeholder">
+          <p>Database impact chart will appear here</p>
+        </div>
+      </div>
+      
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h4>Database Growth</h4>
+          <div class="metric-value">245 MB</div>
+          <div class="metric-trend negative">
+            <span class="material-icons">trending_up</span>
+            <span>Due to abandoned processes</span>
+          </div>
+        </div>
+        
+        <div class="metric-card">
+          <h4>Query Performance</h4>
+          <div class="metric-value">-18%</div>
+          <div class="metric-trend negative">
+            <span class="material-icons">trending_down</span>
+            <span>Slowdown in related queries</span>
+          </div>
+        </div>
+        
+        <div class="metric-card">
+          <h4>Server Load</h4>
+          <div class="metric-value">+12%</div>
+          <div class="metric-trend negative">
+            <span class="material-icons">trending_up</span>
+            <span>Increased due to orphaned processes</span>
+          </div>
+        </div>
+        
+        <div class="metric-card">
+          <h4>Memory Usage</h4>
+          <div class="metric-value">+8%</div>
+          <div class="metric-trend negative">
+            <span class="material-icons">trending_up</span>
+            <span>Higher than normal</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="analysis-card">
+        <h3>System Performance Timeline</h3>
+        <div class="chart-placeholder">
+          <p>Performance timeline chart will appear here</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recommendations Tab -->
+    <div *ngIf="activeTab === 'recommendations'" class="recommendations-tab">
+      <div class="recommendations-list">
+        <div class="recommendation-item high-priority">
+          <div class="recommendation-header">
+            <h4>Optimize Database Timeout Handling</h4>
+            <span class="badge badge-error">High Priority</span>
+          </div>
+          <p>Implement connection pooling and timeout retry logic to address the most common cause of process abandonment.</p>
+          <div class="recommendation-details">
+            <div class="detail">
+              <span class="label">Impact:</span>
+              <span class="value">Could reduce abandonments by up to 42%</span>
+            </div>
+            <div class="detail">
+              <span class="label">Effort:</span>
+              <span class="value">Medium (2-3 days)</span>
+            </div>
+            <div class="detail">
+              <span class="label">Affected Tables:</span>
+              <span class="value">ACT_RU_VARIABLE, ACT_HI_VARINST</span>
+            </div>
+          </div>
+          <div class="recommendation-actions">
+            <button class="btn btn-primary">Implement</button>
+            <button class="btn-text">View Details</button>
+          </div>
+        </div>
+        
+        <div class="recommendation-item medium-priority">
+          <div class="recommendation-header">
+            <h4>Enhance Form Validation</h4>
+            <span class="badge badge-warning">Medium Priority</span>
+          </div>
+          <p>Implement client-side and server-side validation improvements to prevent validation errors leading to abandoned processes.</p>
+          <div class="recommendation-details">
+            <div class="detail">
+              <span class="label">Impact:</span>
+              <span class="value">Could reduce abandonments by up to 27%</span>
+            </div>
+            <div class="detail">
+              <span class="label">Effort:</span>
+              <span class="value">Medium (3-4 days)</span>
+            </div>
+            <div class="detail">
+              <span class="label">Affected Components:</span>
+              <span class="value">Form Handlers, Validation Services</span>
+            </div>
+          </div>
+          <div class="recommendation-actions">
+            <button class="btn btn-primary">Implement</button>
+            <button class="btn-text">View Details</button>
+          </div>
+        </div>
+        
+        <div class="recommendation-item medium-priority">
+          <div class="recommendation-header">
+            <h4>Implement External Service Fallback</h4>
+            <span class="badge badge-warning">Medium Priority</span>
+          </div>
+          <p>Add fallback mechanisms and retry logic for external service calls to prevent process abandonment due to temporary service failures.</p>
+          <div class="recommendation-details">
+            <div class="detail">
+              <span class="label">Impact:</span>
+              <span class="value">Could reduce abandonments by up to 18%</span>
+            </div>
+            <div class="detail">
+              <span class="label">Effort:</span>
+              <span class="value">Low (1-2 days)</span>
+            </div>
+            <div class="detail">
+              <span class="label">Affected Services:</span>
+              <span class="value">Credit Check Service, Integration Middleware</span>
+            </div>
+          </div>
+          <div class="recommendation-actions">
+            <button class="btn btn-primary">Implement</button>
+            <button class="btn-text">View Details</button>
+          </div>
+        </div>
+        
+        <div class="recommendation-item low-priority">
+          <div class="recommendation-header">
+            <h4>Periodic Database Cleanup</h4>
+            <span class="badge badge-info">Low Priority</span>
+          </div>
+          <p>Schedule automatic database cleanup jobs to purge completed and abandoned processes older than 30 days.</p>
+          <div class="recommendation-details">
+            <div class="detail">
+              <span class="label">Impact:</span>
+              <span class="value">Reduce database size by approximately 30%</span>
+            </div>
+            <div class="detail">
+              <span class="label">Effort:</span>
+              <span class="value">Low (1 day)</span>
+            </div>
+            <div class="detail">
+              <span class="label">Affected Tables:</span>
+              <span class="value">All historical tables</span>
+            </div>
+          </div>
+          <div class="recommendation-actions">
+            <button class="btn btn-primary">Implement</button>
+            <button class="btn-text">View Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
