@@ -1,4 +1,4 @@
- <div class="dashboard-container">
+<div class="dashboard-container responsive-dashboard">
         <!-- Header Section -->
         <div class="dashboard-header">
             <h2>APS Alfresco Monitoring Dashboard</h2>
@@ -14,7 +14,7 @@
         </div>
 
         <!-- Status Cards -->
-        <div class="status-card-grid">
+        <div class="status-card-grid responsive-status-grid">
             <div class="status-card">
                 <div class="card-header">
                     <h6 class="card-title">Processus Actifs</h6>
@@ -93,7 +93,7 @@
         </div>
 
         <!-- Charts Section -->
-        <div class="charts-container">
+        <div class="charts-container responsive-charts">
             <div class="chart-card">
                 <h3>Tendance des Processus Abandonnés</h3>
                 <div class="chart-placeholder">
@@ -112,11 +112,11 @@
         </div>
 
         <!-- Bottom Section -->
-        <div class="bottom-section">
+        <div class="bottom-section responsive-bottom-section">
             <!-- Recent Activity Table -->
             <div class="recent-activity">
                 <h5>Activité Récente des Processus</h5>
-                <div class="table-container">
+                <div class="table-container responsive-table-container">
                     <table class="activity-table">
                         <thead>
                             <tr>
@@ -158,7 +158,7 @@
             </div>
 
             <!-- Right Column -->
-            <div>
+            <div class="responsive-right-column">
                 <!-- Alerts Section -->
                 <div class="alert-section">
                     <div class="alert alert-critical">
@@ -221,3 +221,98 @@
             </div>
         </div>
     </div>
+    <!-- Ajouter le CSS suivant dans le fichier dashboard.component.css/scss associé -->
+    <style>
+    /* --- Responsive Dashboard Styles --- */
+    .responsive-dashboard {
+        padding: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+        .responsive-dashboard {
+            padding: 1rem;
+        }
+
+        .responsive-status-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .responsive-charts {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .responsive-bottom-section {
+            flex-direction: column;
+        }
+
+        .responsive-right-column {
+            margin-top: 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .responsive-status-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .responsive-charts {
+            flex-direction: column;
+        }
+
+        .responsive-bottom-section {
+            flex-direction: column;
+        }
+
+        .responsive-right-column {
+            margin-top: 1rem;
+        }
+
+        .activity-table,
+        .activity-table thead,
+        .activity-table tbody,
+        .activity-table th,
+        .activity-table td,
+        .activity-table tr {
+            display: block;
+            width: 100%;
+        }
+
+        .activity-table thead {
+            display: none;
+        }
+
+        .activity-table tr {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .activity-table td {
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+        }
+
+        .activity-table td:before {
+            position: absolute;
+            left: 0;
+            width: 50%;
+            padding-left: 1rem;
+            white-space: nowrap;
+            font-weight: bold;
+            text-align: left;
+            content: attr(data-label);
+        }
+
+        .responsive-table-container {
+            overflow-x: auto;
+        }
+    }
+    </style>
