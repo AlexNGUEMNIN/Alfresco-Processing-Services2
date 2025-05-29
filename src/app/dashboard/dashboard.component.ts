@@ -48,4 +48,6 @@ export class DashboardComponent implements OnInit {
   refreshData(): void {
     this.loadData();
   }
+
+  
 }

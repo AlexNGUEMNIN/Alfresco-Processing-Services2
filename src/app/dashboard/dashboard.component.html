@@ -1,94 +1,223 @@
-<div class="dashboard-container fade-in">
-  <div class="dashboard-header">
-    <h2>Dashboard Overview</h2>
-    <div class="actions">
-      <button class="btn btn-primary" (click)="analyzeAbandonedProcesses()">
-        <span class="material-icons">analytics</span>
-        Analyze Abandoned Processes
-      </button>
-      
-      <button class="btn-icon refresh-btn" (click)="refreshData()">
-        <span class="material-icons">refresh</span>
-      </button>
-    </div>
-  </div>
-  
-  <div *ngIf="loading" class="loading-container">
-    <div class="loading-spinner"></div>
-    <p>Loading dashboard data...</p>
-  </div>
-  
-  <div *ngIf="!loading && processStats" class="cards-container">
-    <div class="status-card-grid">
-      <app-status-card 
-        title="Active Processes" 
-        [value]="processStats.active" 
-        icon="play_circle"
-        color="primary">
-      </app-status-card>
-      
-      <app-status-card 
-        title="Abandoned Processes" 
-        [value]="processStats.abandoned" 
-        icon="error"
-        color="error">
-      </app-status-card>
-      
-      <app-status-card 
-        title="Terminated Processes" 
-        [value]="processStats.terminated" 
-        icon="check_circle"
-        color="success">
-      </app-status-card>
-      
-      <app-status-card 
-        title="Total Processes" 
-        [value]="processStats.total" 
-        icon="category"
-        color="secondary">
-      </app-status-card>
-    </div>
-    
-    <div class="charts-container">
-      <div class="chart-card">
-        <h3>Abandoned Process Trend</h3>
-        <div class="chart-placeholder">
-          <p>Trend chart visualization will appear here</p>
-          <p class="chart-description">Shows the daily trend of abandoned processes over time</p>
+ <div class="dashboard-container">
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <h2>APS Alfresco Monitoring Dashboard</h2>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="analyzeProcesses()">
+                    <span class="material-icons">analytics</span>
+                    Analyser les Processus Abandonnés
+                </button>
+                <button class="btn-icon" onclick="refreshData()">
+                    <span class="material-icons">refresh</span>
+                </button>
+            </div>
         </div>
-      </div>
-      
-      <div class="chart-card">
-        <h3>Database Growth Impact</h3>
-        <div class="chart-placeholder">
-          <p>Database growth chart will appear here</p>
-          <p class="chart-description">Shows the impact of abandoned processes on database size</p>
+
+        <!-- Status Cards -->
+        <div class="status-card-grid">
+            <div class="status-card">
+                <div class="card-header">
+                    <h6 class="card-title">Processus Actifs</h6>
+                    <div class="card-icon primary-icon">
+                        <span class="material-icons">play_circle</span>
+                    </div>
+                </div>
+                <div class="card-value">
+                    1,245/4,266
+                    <span class="badge badge-success">
+                        <span class="material-icons" style="font-size: 1rem;">trending_up</span>
+                        +12.5%
+                    </span>
+                </div>
+                <p class="card-description">
+                    Vous avez traité <span class="highlight">156 processus</span> supplémentaires cette semaine
+                </p>
+            </div>
+
+            <div class="status-card">
+                <div class="card-header">
+                    <h6 class="card-title">Processus Abandonnés</h6>
+                    <div class="card-icon warning-icon">
+                        <span class="material-icons">error</span>
+                    </div>
+                </div>
+                <div class="card-value">
+                    87/4,266
+                    <span class="badge badge-warning">
+                        <span class="material-icons" style="font-size: 1rem;">trending_down</span>
+                        -5.2%
+                    </span>
+                </div>
+                <p class="card-description">
+                    Réduction de <span class="highlight">23 processus</span> abandonnés par rapport au mois dernier
+                </p>
+            </div>
+
+            <div class="status-card">
+                <div class="card-header">
+                    <h6 class="card-title">Processus Terminés</h6>
+                    <div class="card-icon success-icon">
+                        <span class="material-icons">check_circle</span>
+                    </div>
+                </div>
+                <div class="card-value">
+                    2,934/4,266
+                    <span class="badge badge-success">
+                        <span class="material-icons" style="font-size: 1rem;">trending_up</span>
+                        +18.7%
+                    </span>
+                </div>
+                <p class="card-description">
+                    Excellent taux de completion avec <span class="highlight">534 processus</span> terminés cette semaine
+                </p>
+            </div>
+
+            <div class="status-card">
+                <div class="card-header">
+                    <h6 class="card-title">Total Processus</h6>
+                    <div class="card-icon secondary-icon">
+                        <span class="material-icons">category</span>
+                    </div>
+                </div>
+                <div class="card-value">
+                    4,266
+                    <span class="badge badge-success">
+                        <span class="material-icons" style="font-size: 1rem;">trending_up</span>
+                        +8.3%
+                    </span>
+                </div>
+                <p class="card-description">
+                    Croissance totale de <span class="highlight">325 processus</span> par rapport au mois précédent
+                </p>
+            </div>
         </div>
-      </div>
+
+        <!-- Charts Section -->
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>Tendance des Processus Abandonnés</h3>
+                <div class="chart-placeholder">
+                    <p>Graphique Grafana - Tendance Temporelle</p>
+                    <p class="chart-description">Visualisation de l'évolution quotidienne des processus abandonnés</p>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Impact sur la Base de Données</h3>
+                <div class="chart-placeholder">
+                    <p>Graphique Grafana - Croissance DB</p>
+                    <p class="chart-description">Impact des processus abandonnés sur la taille de la base de données</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <!-- Recent Activity Table -->
+            <div class="recent-activity">
+                <h5>Activité Récente des Processus</h5>
+                <div class="table-container">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>ID Processus</th>
+                                <th>Nom du Processus</th>
+                                <th>Statut</th>
+                                <th>Durée</th>
+                                <th>Impact DB</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a href="#" class="process-id">#APS-2024-004</a></td>
+                                <td>Demande de Prêt Personnel</td>
+                                <td>
+                                    <span class="status-indicator status-active">
+                                        <span class="status-dot"></span>
+                                        Actif
+                                    </span>
+                                </td>
+                                <td>0h 45min</td>
+                                <td>+34 MB</td>
+                            </tr>
+                            <tr>
+                                <td><a href="#" class="process-id">#APS-2024-005</a></td>
+                                <td>Validation KYC Client</td>
+                                <td>
+                                    <span class="status-indicator status-abandoned">
+                                        <span class="status-dot"></span>
+                                        Abandonné
+                                    </span>
+                                </td>
+                                <td>8h 17min</td>
+                                <td>+156 MB</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Alerts Section -->
+                <div class="alert-section">
+                    <div class="alert alert-critical">
+                        <div class="alert-icon">
+                            <span class="material-icons">warning</span>
+                        </div>
+                        <div class="alert-content">
+                            <h4>Alerte Critique</h4>
+                            <p>12 processus abandonnés dans les dernières 24h, causant une croissance significative de la base de données.</p>
+                        </div>
+                        <button class="alert-action">
+                            <span class="material-icons">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <div class="alert-icon">
+                            <span class="material-icons">info</span>
+                        </div>
+                        <div class="alert-content">
+                            <h4>Avertissement Performance</h4>
+                            <p>La table 'ACT_HI_VARINST' montre un taux de croissance anormal (8.2% sur 7 jours).</p>
+                        </div>
+                        <button class="alert-action">
+                            <span class="material-icons">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <div class="alert-icon">
+                            <span class="material-icons">storage</span>
+                        </div>
+                        <div class="alert-content">
+                            <h4>Optimisation Requise</h4>
+                            <p>3 tables nécessitent une optimisation pour améliorer les performances du système.</p>
+                        </div>
+                        <button class="alert-action">
+                            <span class="material-icons">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Support Card -->
+                <div class="support-card">
+                    <div class="support-header">
+                        <div>
+                            <h5 class="support-title">Support Technique APS</h5>
+                            <p class="support-subtitle">Réponse typique sous 5 minutes</p>
+                        </div>
+                        <div class="user-avatars">
+                            <div class="avatar">AT</div>
+                            <div class="avatar">BS</div>
+                            <div class="avatar">CM</div>
+                        </div>
+                    </div>
+                    <button class="support-btn" onclick="openSupport()">
+                        Besoin d'Aide ?
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <div class="alert-section">
-      <div class="alert alert-critical">
-        <span class="material-icons">warning</span>
-        <div class="alert-content">
-          <h4>Critical Alert</h4>
-          <p>12 processes abandoned in the last 24 hours, causing significant database growth.</p>
-        </div>
-        <button class="btn-link">
-          <span class="material-icons">arrow_forward</span>
-        </button>
-      </div>
-      
-      <div class="alert alert-warning">
-        <span class="material-icons">info</span>
-        <div class="alert-content">
-          <h4>Performance Warning</h4>
-          <p>Database table 'ACT_HI_VARINST' showing abnormal growth rate (8.2% in the last 7 days).</p>
-        </div>
-        <button class="btn-link">
-          <span class="material-icons">arrow_forward</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>

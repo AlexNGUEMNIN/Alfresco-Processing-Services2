@@ -10,10 +10,18 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
+
+
   {
     path: 'processes',
     loadComponent: () => import('./processes/processes.component').then(m => m.ProcessesComponent)
   },
+  {
+    path: 'auth-login',
+    loadComponent: () => import('./auth-login/auth-login.component').then(m=>m.AuthLoginComponent)
+  },
+
+
   {
     path: 'analysis',
     loadComponent: () => import('./analysis/analysis.component').then(m => m.AnalysisComponent)

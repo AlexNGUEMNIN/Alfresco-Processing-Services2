@@ -1,25 +1,60 @@
 <header class="header">
-  <div class="header-left">
-    <h1 class="page-title">APS Monitoring Dashboard</h1>
-  </div>
-  
-  <div class="header-right">
-    <div class="date-time">
-      {{ currentDate | date:'medium' }}
+  <div class="header-container">
+    <div class="header-left">
+      <h1 class="page-title">APS First Monitoring 👋</h1>
     </div>
     
-    <div class="actions">
-      <button class="btn-icon">
-        <span class="material-icons">notifications</span>
-      </button>
+    <div class="header-right">
+      <div class="date-time">
+        {{ currentDate | date:'medium' }}
+      </div>
       
-      <button class="btn-icon">
-        <span class="material-icons">help</span>
-      </button>
-      
-      <button class="btn-icon">
-        <span class="material-icons">settings</span>
-      </button>
+      <div class="actions">
+        <button class="btn-icon" matTooltip="Notifications">
+          <span class="material-icons">notifications</span>
+          <span class="notification-badge">3</span>
+        </button>
+        
+        <button class="btn-icon" matTooltip="Aide">
+          <span class="material-icons">help</span>
+        </button>
+        
+        <button class="btn-icon" matTooltip="Paramètres">
+          <span class="material-icons">settings</span>
+        </button>
+
+        
+<!--         
+        <div class="user-profile">
+          <div class="user-avatar">
+            <img src="assets/images/avatar.png" alt="User Avatar">
+             <i class="fa fa-address-book" aria-hidden="true"></i>
+            <div class="status-indicator"></div>
+          </div>
+          <div class="user-info">
+            <div class="user-name">Admin</div>
+            <div class="user-role">Administrateur</div>
+          </div>
+        </div> -->
+
+        <div class="user-profile">
+  <div class="user-avatar">
+    <!-- Solution avec Material Icons -->
+    <span class="material-icons">account_circle</span>
+    
+    <!-- OU avec Font Awesome (si vous préférez) -->
+   
+    
+    <div class="status-indicator online"></div>
+  </div>
+  <div class="user-info">
+    <div class="user-name">Admin</div>
+    <div class="user-role">Administrateur</div>
+  </div>
+</div>
+      </div>
     </div>
   </div>
+  
+  <div class="header-divider"></div>
 </header>

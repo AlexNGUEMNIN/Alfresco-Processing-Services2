@@ -1,26 +1,31 @@
 <div class="sidebar">
-  <div class="sidebar-header">
-    <div class="logo">
-      <h2>Afriland First Bank</h2>
-      <p>APS Monitoring</p>
-    </div>
+  <div class="logo" id="logo">
+    
+    <img src="/assets/images/afriland-removebg-preview.png" alt="Afriland2" />
+   
+    <h2>APS Monitoring</h2>
   </div>
-  
-  <div class="sidebar-menu">
-    <ul>
-      <li *ngFor="let item of menuItems" [routerLinkActive]="'active'">
-        <a [routerLink]="item.route">
-          <span class="material-icons icon">{{ item.icon }}</span>
-          <span class="label">{{ item.label }}</span>
-        </a>
-      </li>
-    </ul>
+
+  <div class="menu-items">
+    <a
+      *ngFor="let item of menuItems"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      class="menu-item"
+    >
+      <span class="material-icons icon">{{ item.icon }}</span>
+      <span class="label">{{ item.label }}</span>
+    </a>
   </div>
-  
-  <div class="sidebar-footer">
+
+  <div class="bottom-section">
     <div class="user-info">
       <span class="material-icons">account_circle</span>
       <span>Admin User</span>
+    </div>
+
+    <div class="version">
+      <span>AFB • Version 1.0</span>
     </div>
   </div>
 </div>

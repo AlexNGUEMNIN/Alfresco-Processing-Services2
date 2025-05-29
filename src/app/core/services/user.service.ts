@@ -23,7 +23,7 @@ export class UserService {
       id: 'USER002',
       username: 'supervisor1',
       email: 'supervisor1@afriland.com',
-      firstName: 'John',
+      firstName: 'Alex',
       lastName: 'Doe',
       role: 'supervisor',
       lastLogin: new Date('2025-04-11T14:15:00'),

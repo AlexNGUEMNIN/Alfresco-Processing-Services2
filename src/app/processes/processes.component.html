@@ -1,159 +1,193 @@
 <div class="processes-container fade-in">
-  <div class="processes-header">
-    <h2>Process Management</h2>
-    <div class="actions">
-      <button class="btn-icon refresh-btn" (click)="loadProcesses()">
-        <span class="material-icons">refresh</span>
-      </button>
-    </div>
-  </div>
-  
-  <div class="filter-section">
-    <div class="search-box">
-      <span class="material-icons">search</span>
-      <input 
-        type="text" 
-        placeholder="Search processes..." 
-        [(ngModel)]="filter.searchTerm" 
-        (input)="applyFilters()"
-      >
-    </div>
-    
-    <div class="filter-controls">
-      <select [(ngModel)]="filter.status" (change)="applyFilters()">
-        <option value="">All Statuses</option>
-        <option value="active">Active</option>
-        <option value="abandoned">Abandoned</option>
-        <option value="terminated">Terminated</option>
-      </select>
-      
-      <button class="btn-text" (click)="clearFilters()">
-        <span class="material-icons">clear</span>
-        Clear Filters
-      </button>
-    </div>
-  </div>
-  
-  <div *ngIf="loading" class="loading-container">
-    <div class="loading-spinner"></div>
-    <p>Loading processes...</p>
-  </div>
-  
-  <div *ngIf="!loading" class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Start Date</th>
-          <th>Last Activity</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let process of filteredProcesses" (click)="selectProcess(process)" [class.selected]="selectedProcess?.id === process.id">
-          <td>{{ process.id }}</td>
-          <td>{{ process.name }}</td>
-          <td>{{ process.type }}</td>
-          <td>
-            <span class="badge" [ngClass]="getStatusClass(process.status)">
-              {{ process.status }}
-            </span>
-          </td>
-          <td>{{ process.startDate | date:'medium' }}</td>
-          <td>{{ process.lastActivity | date:'medium' }}</td>
-          <td>
-            <div class="action-buttons">
-              <button class="btn-icon" *ngIf="process.status === 'abandoned'" (click)="restartProcess(process.id); $event.stopPropagation()">
-                <span class="material-icons" title="Restart Process">play_circle</span>
-              </button>
-              
-              <button class="btn-icon" *ngIf="process.status === 'active'" (click)="terminateProcess(process.id); $event.stopPropagation()">
-                <span class="material-icons" title="Terminate Process">stop_circle</span>
-              </button>
-              
-              <button class="btn-icon" (click)="selectProcess(process); $event.stopPropagation()">
-                <span class="material-icons" title="View Details">visibility</span>
-              </button>
+        <!-- Header Section -->
+        <div class="processes-header">
+            <h2>Process Management</h2>
+            <div class="actions">
+                <button class="btn-icon refresh-btn" onclick="loadProcesses()">
+                    <span class="material-icons">refresh</span>
+                </button>
             </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <div *ngIf="!loading && filteredProcesses.length === 0" class="empty-state">
-    <span class="material-icons">find_in_page</span>
-    <p>No processes found matching your criteria.</p>
-    <button class="btn btn-primary" (click)="clearFilters()">Clear Filters</button>
-  </div>
-  
-  <div *ngIf="selectedProcess" class="process-details-panel slide-in-left">
-    <div class="panel-header">
-      <h3>Process Details</h3>
-      <button class="btn-icon" (click)="closeProcessDetails()">
-        <span class="material-icons">close</span>
-      </button>
-    </div>
-    
-    <div class="panel-content">
-      <div class="detail-section">
-        <h4>Basic Information</h4>
-        <div class="detail-row">
-          <span class="label">ID:</span>
-          <span class="value">{{ selectedProcess.id }}</span>
         </div>
-        <div class="detail-row">
-          <span class="label">Name:</span>
-          <span class="value">{{ selectedProcess.name }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Type:</span>
-          <span class="value">{{ selectedProcess.type }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Status:</span>
-          <span class="badge" [ngClass]="getStatusClass(selectedProcess.status)">
-            {{ selectedProcess.status }}
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Start Date:</span>
-          <span class="value">{{ selectedProcess.startDate | date:'medium' }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Last Activity:</span>
-          <span class="value">{{ selectedProcess.lastActivity | date:'medium' }}</span>
-        </div>
-      </div>
-      
-      <div class="detail-section">
-        <h4>Timeline</h4>
-        <div class="timeline-placeholder">
-          <p>Process timeline visualization will appear here</p>
-        </div>
-      </div>
-      
-      <div class="detail-section">
-        <h4>Variables</h4>
-        <div class="variables-placeholder">
-          <p>Process variables will appear here</p>
-        </div>
-      </div>
-      
-      <div class="action-buttons">
-        <button class="btn btn-primary" *ngIf="selectedProcess.status === 'abandoned'" (click)="restartProcess(selectedProcess.id)">
-          <span class="material-icons">play_circle</span>
-          Restart Process
-        </button>
         
-        <button class="btn btn-error" *ngIf="selectedProcess.status === 'active'" (click)="terminateProcess(selectedProcess.id)">
-          <span class="material-icons">stop_circle</span>
-          Terminate Process
-        </button>
-      </div>
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="search-box">
+                <span class="material-icons">search</span>
+                <input 
+                    type="text" 
+                    placeholder="Rechercher des processus..." 
+                    id="searchInput"
+                    oninput="applyFilters()"
+                >
+            </div>
+            
+            <div class="filter-controls">
+                <select id="statusFilter" onchange="applyFilters()">
+                    <option value="">Tous les Statuts</option>
+                    <option value="active">Actif</option>
+                    <option value="abandoned">Abandonné</option>
+                    <option value="terminated">Terminé</option>
+                </select>
+                
+                <button class="btn-text" onclick="clearFilters()">
+                    <span class="material-icons">clear</span>
+                    Effacer Filtres
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingContainer" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Chargement des processus...</p>
+        </div>
+        
+        <!-- Table Container -->
+        <div id="tableContainer" class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th>Date de Début</th>
+                        <th>Dernière Activité</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="processTableBody">
+                    <tr onclick="selectProcess(this)" data-id="APS-2024-001">
+                        <td>APS-2024-001</td>
+                        <td>Demande de Prêt Personnel</td>
+                        <td>Crédit</td>
+                        <td>
+                            <span class="badge status-active">Actif</span>
+                        </td>
+                        <td>28 Mai 2025, 09:30</td>
+                        <td>28 Mai 2025, 14:25</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon" onclick="terminateProcess('APS-2024-001'); event.stopPropagation()">
+                                    <span class="material-icons" title="Terminer Processus">stop_circle</span>
+                                </button>
+                                <button class="btn-icon" onclick="selectProcess(this); event.stopPropagation()">
+                                    <span class="material-icons" title="Voir Détails">visibility</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="selectProcess(this)" data-id="APS-2024-002">
+                        <td>APS-2024-002</td>
+                        <td>Validation KYC Client</td>
+                        <td>Conformité</td>
+                        <td>
+                            <span class="badge status-abandoned">Abandonné</span>
+                        </td>
+                        <td>27 Mai 2025, 16:45</td>
+                        <td>28 Mai 2025, 08:12</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon" onclick="restartProcess('APS-2024-002'); event.stopPropagation()">
+                                    <span class="material-icons" title="Redémarrer Processus">play_circle</span>
+                                </button>
+                                <button class="btn-icon" onclick="selectProcess(this); event.stopPropagation()">
+                                    <span class="material-icons" title="Voir Détails">visibility</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="selectProcess(this)" data-id="APS-2024-003">
+                        <td>APS-2024-003</td>
+                        <td>Analyse de Risque</td>
+                        <td>Évaluation</td>
+                        <td>
+                            <span class="badge status-terminated">Terminé</span>
+                        </td>
+                        <td>26 Mai 2025, 11:20</td>
+                        <td>27 Mai 2025, 15:30</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon" onclick="selectProcess(this); event.stopPropagation()">
+                                    <span class="material-icons" title="Voir Détails">visibility</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <span class="material-icons">find_in_page</span>
+            <p>Aucun processus trouvé correspondant à vos critères.</p>
+            <button class="btn btn-primary" onclick="clearFilters()">Effacer les Filtres</button>
+        </div>
+        
+        <!-- Process Details Panel -->
+        <div id="processDetailsPanel" class="process-details-panel slide-in-left" style="display: none;">
+            <div class="panel-header">
+                <h3>Détails du Processus</h3>
+                <button class="btn-icon" onclick="closeProcessDetails()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="panel-content">
+                <div class="detail-section">
+                    <h4>Informations de Base</h4>
+                    <div class="detail-row">
+                        <span class="label">ID:</span>
+                        <span class="value" id="detailId">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Nom:</span>
+                        <span class="value" id="detailName">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Type:</span>
+                        <span class="value" id="detailType">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Statut:</span>
+                        <span class="badge" id="detailStatus">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Date de Début:</span>
+                        <span class="value" id="detailStartDate">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Dernière Activité:</span>
+                        <span class="value" id="detailLastActivity">-</span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Timeline</h4>
+                    <div class="timeline-placeholder">
+                        <p>La visualisation de la timeline du processus apparaîtra ici</p>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Variables</h4>
+                    <div class="variables-placeholder">
+                        <p>Les variables du processus apparaîtront ici</p>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="restartBtn" onclick="restartSelectedProcess()" style="display: none;">
+                        <span class="material-icons">play_circle</span>
+                        Redémarrer Processus
+                    </button>
+                    
+                    <button class="btn btn-error" id="terminateBtn" onclick="terminateSelectedProcess()" style="display: none;">
+                        <span class="material-icons">stop_circle</span>
+                        Terminer Processus
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
