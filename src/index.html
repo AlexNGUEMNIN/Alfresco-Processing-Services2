@@ -125,13 +125,13 @@
           transform: translateY(0);
         }
       }
-      
+
       /* Masquer app-root initialement */
       app-root {
         opacity: 0;
         transition: opacity 0.5s ease-in-out;
       }
-      
+
       app-root.ready {
         opacity: 1;
       }
@@ -152,92 +152,108 @@
       </div>
     </div>
     <app-root></app-root>
-    
+
     <script>
       // Variables de contrôle
       let angularReady = false;
       let dataLoaded = false;
       let loaderHidden = false;
-      
-      // Fonction pour masquer le loader
+      let loaderStartTime = Date.now();
+
+      // Fonction pour masquer le loader (attend au moins 1s d'animation)
       function hideLoader() {
         if (loaderHidden) return;
         loaderHidden = true;
-        
+
         const appRoot = document.querySelector("app-root");
         const loader = document.getElementById("custom-loader-bg");
-        
-        if (loader && appRoot) {
-          // Animation de transition fluide
-          loader.classList.add("hide");
-          appRoot.classList.add("ready");
-          
-          setTimeout(() => {
-            loader.style.display = "none";
-          }, 700);
+        const elapsed = Date.now() - loaderStartTime;
+        const minDuration = 1000; // 1 seconde minimum
+
+        function doHide() {
+          if (loader && appRoot) {
+            loader.classList.add("hide");
+            appRoot.classList.add("ready");
+            setTimeout(() => {
+              loader.style.display = "none";
+            }, 700);
+          }
+        }
+
+        if (elapsed < minDuration) {
+          setTimeout(doHide, minDuration - elapsed);
+        } else {
+          doHide();
         }
       }
-      
+
       // Vérifier si tout est prêt
       function checkIfReady() {
         if (angularReady && dataLoaded && !loaderHidden) {
           hideLoader();
         }
       }
-      
+
       // Détecter quand Angular est prêt
       function detectAngularReady() {
         const appRoot = document.querySelector("app-root");
         if (!appRoot) return;
-        
+
         // Méthode 1: Vérifier si du contenu a été injecté dans app-root
         const checkContent = () => {
-          if (appRoot.children.length > 0 || appRoot.innerHTML.trim() !== '') {
+          if (appRoot.children.length > 0 || appRoot.innerHTML.trim() !== "") {
             angularReady = true;
             checkIfReady();
             return true;
           }
           return false;
         };
-        
+
         // Vérification immédiate
         if (checkContent()) return;
-        
+
         // Observer les mutations DOM dans app-root
         const observer = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
-            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            if (
+              mutation.type === "childList" &&
+              mutation.addedNodes.length > 0
+            ) {
               if (checkContent()) {
                 observer.disconnect();
               }
             }
           });
         });
-        
+
         observer.observe(appRoot, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
-        
+
         // Fallback: timeout après 10 secondes
         setTimeout(() => {
           if (!angularReady) {
-            console.warn('Angular detection timeout - forcing ready state');
+            console.warn("Angular detection timeout - forcing ready state");
             angularReady = true;
             checkIfReady();
             observer.disconnect();
           }
         }, 10000);
       }
-      
+
       // Détecter quand les données sont chargées
       function detectDataLoaded() {
         // Méthode 1: Vérifier les éléments spécifiques de votre app
         const checkDataElements = () => {
           // Adaptez ces sélecteurs à votre application
-          const dataElements = document.querySelectorAll('[data-loaded], .data-ready, .content-ready');
-          const hasVisibleContent = document.querySelectorAll('table, .card, .dashboard, .content').length > 0;
-          
+          const dataElements = document.querySelectorAll(
+            "[data-loaded], .data-ready, .content-ready"
+          );
+          const hasVisibleContent =
+            document.querySelectorAll("table, .card, .dashboard, .content")
+              .length > 0;
+
           if (dataElements.length > 0 || hasVisibleContent) {
             dataLoaded = true;
             checkIfReady();
@@ -245,14 +261,14 @@
           }
           return false;
         };
-        
+
         // Vérification périodique
         const dataCheckInterval = setInterval(() => {
           if (checkDataElements()) {
             clearInterval(dataCheckInterval);
           }
         }, 500);
-        
+
         // Observer pour les changements dans le DOM
         const observer = new MutationObserver(() => {
           if (checkDataElements()) {
@@ -260,18 +276,18 @@
             clearInterval(dataCheckInterval);
           }
         });
-        
+
         // Observer tout le document pour les changements
         observer.observe(document.body, {
           childList: true,
           subtree: true,
-          attributes: true
+          attributes: true,
         });
-        
+
         // Fallback: considérer les données comme chargées après 5 secondes
         setTimeout(() => {
           if (!dataLoaded) {
-            console.info('Data load timeout - assuming ready');
+            console.info("Data load timeout - assuming ready");
             dataLoaded = true;
             checkIfReady();
             observer.disconnect();
@@ -279,28 +295,28 @@
           }
         }, 5000);
       }
-      
+
       // Event listeners personnalisés pour votre app Angular
-      window.addEventListener('app-ready', () => {
+      window.addEventListener("app-ready", () => {
         angularReady = true;
         checkIfReady();
       });
-      
-      window.addEventListener('data-loaded', () => {
+
+      window.addEventListener("data-loaded", () => {
         dataLoaded = true;
         checkIfReady();
       });
-      
+
       // Démarrage de la détection
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener("DOMContentLoaded", () => {
         detectAngularReady();
         detectDataLoaded();
       });
-      
+
       // Fallback ultime: masquer le loader après 15 secondes
       setTimeout(() => {
         if (!loaderHidden) {
-          console.warn('Ultimate fallback: hiding loader after 15 seconds');
+          console.warn("Ultimate fallback: hiding loader after 15 seconds");
           angularReady = true;
           dataLoaded = true;
           checkIfReady();
