@@ -3,12 +3,309 @@
   <head>
     <title>APS First Monitoring - Afriland First Bank</title>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <base href="/" />
+    <style>
+      /* Loader background */
+      #custom-loader-bg {
+        position: fixed;
+        z-index: 99999;
+        inset: 0;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.7s cubic-bezier(0.77, 0, 0.18, 1);
+      }
+      #custom-loader-bg.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .custom-loader-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        animation: loader-fadein 1s cubic-bezier(0.77, 0, 0.18, 1);
+        position: relative;
+      }
+      @keyframes loader-fadein {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .custom-loader-logo {
+        width: 90px;
+        height: 60px;
+        margin-bottom: 32px;
+        filter: drop-shadow(0 8px 32px #c7000055) drop-shadow(0 0 8px #fff8);
+        animation: logo-spin 2.2s cubic-bezier(0.77, 0, 0.18, 1) infinite;
+      }
+      @keyframes logo-spin {
+        0% {
+          transform: rotate(0deg) scale(1);
+        }
+        80% {
+          transform: rotate(360deg) scale(1.08);
+        }
+        87% {
+          transform: rotate(360deg) scale(1.12);
+        }
+        92% {
+          transform: rotate(360deg) scale(1);
+        }
+        100% {
+          transform: rotate(360deg) scale(1);
+        }
+      }
+      /* Halo effect */
+      .custom-loader-halo {
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          #fff6 0%,
+          #c7000022 60%,
+          transparent 100%
+        );
+        filter: blur(8px);
+        z-index: 0;
+        animation: halo-pulse 2.2s cubic-bezier(0.77, 0, 0.18, 1) infinite;
+        pointer-events: none;
+      }
+      @keyframes halo-pulse {
+        0% {
+          opacity: 0.7;
+          transform: scale(1);
+        }
+        60% {
+          opacity: 1;
+          transform: scale(1.08);
+        }
+        80% {
+          opacity: 0.8;
+          transform: scale(1.13);
+        }
+        100% {
+          opacity: 0.7;
+          transform: scale(1);
+        }
+      }
+      .custom-loader-text {
+        font-family: "Roboto", "Segoe UI", sans-serif;
+        font-size: 1.25rem;
+        color: #c70000;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-shadow: 0 2px 8px #fff, 0 1px 0 #c7000022;
+        animation: text-fadein 1.2s cubic-bezier(0.77, 0, 0.18, 1);
+      }
+      @keyframes text-fadein {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Masquer app-root initialement */
+      app-root {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      
+      app-root.ready {
+        opacity: 1;
+      }
+    </style>
   </head>
   <body>
-    <app-root>Loading...</app-root>
+    <div id="custom-loader-bg">
+      <div class="custom-loader-container">
+        <div class="custom-loader-halo"></div>
+        <img
+          class="custom-loader-logo"
+          src="assets/images/afriland-loader-taskbar.png"
+          alt="Afriland First Bank Logo"
+        />
+        <div class="custom-loader-text">
+          Chargement de votre expérience Afriland...
+        </div>
+      </div>
+    </div>
+    <app-root></app-root>
+    
+    <script>
+      // Variables de contrôle
+      let angularReady = false;
+      let dataLoaded = false;
+      let loaderHidden = false;
+      
+      // Fonction pour masquer le loader
+      function hideLoader() {
+        if (loaderHidden) return;
+        loaderHidden = true;
+        
+        const appRoot = document.querySelector("app-root");
+        const loader = document.getElementById("custom-loader-bg");
+        
+        if (loader && appRoot) {
+          // Animation de transition fluide
+          loader.classList.add("hide");
+          appRoot.classList.add("ready");
+          
+          setTimeout(() => {
+            loader.style.display = "none";
+          }, 700);
+        }
+      }
+      
+      // Vérifier si tout est prêt
+      function checkIfReady() {
+        if (angularReady && dataLoaded && !loaderHidden) {
+          hideLoader();
+        }
+      }
+      
+      // Détecter quand Angular est prêt
+      function detectAngularReady() {
+        const appRoot = document.querySelector("app-root");
+        if (!appRoot) return;
+        
+        // Méthode 1: Vérifier si du contenu a été injecté dans app-root
+        const checkContent = () => {
+          if (appRoot.children.length > 0 || appRoot.innerHTML.trim() !== '') {
+            angularReady = true;
+            checkIfReady();
+            return true;
+          }
+          return false;
+        };
+        
+        // Vérification immédiate
+        if (checkContent()) return;
+        
+        // Observer les mutations DOM dans app-root
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+              if (checkContent()) {
+                observer.disconnect();
+              }
+            }
+          });
+        });
+        
+        observer.observe(appRoot, {
+          childList: true,
+          subtree: true
+        });
+        
+        // Fallback: timeout après 10 secondes
+        setTimeout(() => {
+          if (!angularReady) {
+            console.warn('Angular detection timeout - forcing ready state');
+            angularReady = true;
+            checkIfReady();
+            observer.disconnect();
+          }
+        }, 10000);
+      }
+      
+      // Détecter quand les données sont chargées
+      function detectDataLoaded() {
+        // Méthode 1: Vérifier les éléments spécifiques de votre app
+        const checkDataElements = () => {
+          // Adaptez ces sélecteurs à votre application
+          const dataElements = document.querySelectorAll('[data-loaded], .data-ready, .content-ready');
+          const hasVisibleContent = document.querySelectorAll('table, .card, .dashboard, .content').length > 0;
+          
+          if (dataElements.length > 0 || hasVisibleContent) {
+            dataLoaded = true;
+            checkIfReady();
+            return true;
+          }
+          return false;
+        };
+        
+        // Vérification périodique
+        const dataCheckInterval = setInterval(() => {
+          if (checkDataElements()) {
+            clearInterval(dataCheckInterval);
+          }
+        }, 500);
+        
+        // Observer pour les changements dans le DOM
+        const observer = new MutationObserver(() => {
+          if (checkDataElements()) {
+            observer.disconnect();
+            clearInterval(dataCheckInterval);
+          }
+        });
+        
+        // Observer tout le document pour les changements
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+        
+        // Fallback: considérer les données comme chargées après 5 secondes
+        setTimeout(() => {
+          if (!dataLoaded) {
+            console.info('Data load timeout - assuming ready');
+            dataLoaded = true;
+            checkIfReady();
+            observer.disconnect();
+            clearInterval(dataCheckInterval);
+          }
+        }, 5000);
+      }
+      
+      // Event listeners personnalisés pour votre app Angular
+      window.addEventListener('app-ready', () => {
+        angularReady = true;
+        checkIfReady();
+      });
+      
+      window.addEventListener('data-loaded', () => {
+        dataLoaded = true;
+        checkIfReady();
+      });
+      
+      // Démarrage de la détection
+      document.addEventListener('DOMContentLoaded', () => {
+        detectAngularReady();
+        detectDataLoaded();
+      });
+      
+      // Fallback ultime: masquer le loader après 15 secondes
+      setTimeout(() => {
+        if (!loaderHidden) {
+          console.warn('Ultimate fallback: hiding loader after 15 seconds');
+          angularReady = true;
+          dataLoaded = true;
+          checkIfReady();
+        }
+      }, 15000);
+    </script>
   </body>
 </html>
