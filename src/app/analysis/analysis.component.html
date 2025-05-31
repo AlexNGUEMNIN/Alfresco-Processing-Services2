@@ -1,62 +1,75 @@
-<div class="analysis-container fade-in">
+<div class="analysis-container responsive-analysis fade-in">
+  <!-- Header Section -->
   <div class="analysis-header">
     <h2>Process Analysis</h2>
     <div class="actions">
       <button class="btn btn-primary" (click)="runAnalysis()">
-        <span class="material-icons">play_arrow</span>
+        <span class="material-icons">analytics</span>
         Run Analysis
       </button>
     </div>
   </div>
-  
+
+  <!-- Tab Navigation -->
   <div class="tab-navigation">
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="activeTab === 'overview'"
       (click)="setActiveTab('overview')"
     >
       Overview
     </button>
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="activeTab === 'causes'"
       (click)="setActiveTab('causes')"
     >
       Root Causes
     </button>
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="activeTab === 'impact'"
       (click)="setActiveTab('impact')"
     >
       Performance Impact
     </button>
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="activeTab === 'recommendations'"
       (click)="setActiveTab('recommendations')"
     >
       Recommendations
     </button>
   </div>
-  
+
+  <!-- Loading Skeleton -->
   <div *ngIf="loading" class="loading-container">
-    <div class="loading-spinner"></div>
-    <p>Analyzing process data...</p>
+    <div class="skeleton-header skeleton-animate"></div>
+    <div class="skeleton-tabs skeleton-animate"></div>
+    <div class="skeleton-cards">
+      <div class="skeleton-card skeleton-animate"></div>
+      <div class="skeleton-card skeleton-animate"></div>
+      <div class="skeleton-card skeleton-animate"></div>
+      <div class="skeleton-card skeleton-animate"></div>
+    </div>
+    <div class="skeleton-chart skeleton-animate"></div>
   </div>
-  
-  <div *ngIf="!loading" class="tab-content">
+
+  <!-- Content -->
+  <div *ngIf="!loading" class="tab-content fade-in">
     <!-- Overview Tab -->
     <div *ngIf="activeTab === 'overview'" class="overview-tab">
-      <div class="analysis-card">
+      <div class="analysis-card slide-in-up">
         <h3>Abandoned Process Distribution</h3>
         <div class="chart-placeholder">
           <p>Process distribution chart will appear here</p>
+          <p class="chart-description">
+            Visualize the breakdown of abandoned processes by type
+          </p>
         </div>
       </div>
-      
       <div class="metrics-grid">
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.1s">
           <h4>Total Abandonments</h4>
           <div class="metric-value">87</div>
           <div class="metric-trend positive">
@@ -64,8 +77,7 @@
             <span>8% decrease from previous period</span>
           </div>
         </div>
-        
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.2s">
           <h4>Average Duration</h4>
           <div class="metric-value">23.5 hours</div>
           <div class="metric-trend negative">
@@ -73,8 +85,7 @@
             <span>5% increase from previous period</span>
           </div>
         </div>
-        
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.3s">
           <h4>Abandonment Rate</h4>
           <div class="metric-value">12.4%</div>
           <div class="metric-trend positive">
@@ -82,8 +93,7 @@
             <span>2.1% decrease from previous period</span>
           </div>
         </div>
-        
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.4s">
           <h4>Most Affected Process</h4>
           <div class="metric-value">Loan Application</div>
           <div class="metric-trend neutral">
@@ -91,31 +101,34 @@
           </div>
         </div>
       </div>
-      
-      <div class="analysis-card">
+      <div class="analysis-card slide-in-up" style="animation-delay: 0.5s">
         <h3>Historical Trend</h3>
         <div class="chart-placeholder">
           <p>Historical trend chart will appear here</p>
+          <p class="chart-description">Track abandonment evolution over time</p>
         </div>
       </div>
     </div>
-    
+
     <!-- Root Causes Tab -->
     <div *ngIf="activeTab === 'causes'" class="causes-tab">
-      <div class="analysis-card">
+      <div class="analysis-card slide-in-up">
         <h3>Common Causes of Abandonment</h3>
         <div class="chart-placeholder">
           <p>Pareto chart of causes will appear here</p>
+          <p class="chart-description">Ranking of causes by frequency</p>
         </div>
       </div>
-      
       <div class="causes-list">
-        <div class="cause-item">
+        <div class="cause-item slide-in-up" style="animation-delay: 0.1s">
           <div class="cause-header">
             <h4>Database Timeout</h4>
             <span class="badge badge-error">Critical</span>
           </div>
-          <p>Database connection timeout during high-volume transaction processing. Occurs most frequently between 9-11 AM.</p>
+          <p>
+            Database connection timeout during high-volume transaction
+            processing. Occurs most frequently between 9-11 AM.
+          </p>
           <div class="cause-stats">
             <div class="stat">
               <span class="label">Frequency:</span>
@@ -127,13 +140,15 @@
             </div>
           </div>
         </div>
-        
-        <div class="cause-item">
+        <div class="cause-item slide-in-up" style="animation-delay: 0.2s">
           <div class="cause-header">
             <h4>Validation Error</h4>
             <span class="badge badge-warning">Medium</span>
           </div>
-          <p>Process variable validation errors during form submission causing process to stall.</p>
+          <p>
+            Process variable validation errors during form submission causing
+            process to stall.
+          </p>
           <div class="cause-stats">
             <div class="stat">
               <span class="label">Frequency:</span>
@@ -141,17 +156,21 @@
             </div>
             <div class="stat">
               <span class="label">Affected Processes:</span>
-              <span class="value">Customer Onboarding, Credit Card Application</span>
+              <span class="value"
+                >Customer Onboarding, Credit Card Application</span
+              >
             </div>
           </div>
         </div>
-        
-        <div class="cause-item">
+        <div class="cause-item slide-in-up" style="animation-delay: 0.3s">
           <div class="cause-header">
             <h4>External Service Failure</h4>
             <span class="badge badge-warning">Medium</span>
           </div>
-          <p>Failed integration with external credit check service resulting in abandoned processes.</p>
+          <p>
+            Failed integration with external credit check service resulting in
+            abandoned processes.
+          </p>
           <div class="cause-stats">
             <div class="stat">
               <span class="label">Frequency:</span>
@@ -159,24 +178,28 @@
             </div>
             <div class="stat">
               <span class="label">Affected Processes:</span>
-              <span class="value">Loan Application, Credit Card Application</span>
+              <span class="value"
+                >Loan Application, Credit Card Application</span
+              >
             </div>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- Performance Impact Tab -->
     <div *ngIf="activeTab === 'impact'" class="impact-tab">
-      <div class="analysis-card">
+      <div class="analysis-card slide-in-up">
         <h3>Database Impact</h3>
         <div class="chart-placeholder">
           <p>Database impact chart will appear here</p>
+          <p class="chart-description">
+            Impact of abandoned processes on DB growth
+          </p>
         </div>
       </div>
-      
       <div class="metrics-grid">
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.1s">
           <h4>Database Growth</h4>
           <div class="metric-value">245 MB</div>
           <div class="metric-trend negative">
@@ -184,8 +207,7 @@
             <span>Due to abandoned processes</span>
           </div>
         </div>
-        
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.2s">
           <h4>Query Performance</h4>
           <div class="metric-value">-18%</div>
           <div class="metric-trend negative">
@@ -193,8 +215,7 @@
             <span>Slowdown in related queries</span>
           </div>
         </div>
-        
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.3s">
           <h4>Server Load</h4>
           <div class="metric-value">+12%</div>
           <div class="metric-trend negative">
@@ -202,8 +223,7 @@
             <span>Increased due to orphaned processes</span>
           </div>
         </div>
-        
-        <div class="metric-card">
+        <div class="metric-card slide-in-up" style="animation-delay: 0.4s">
           <h4>Memory Usage</h4>
           <div class="metric-value">+8%</div>
           <div class="metric-trend negative">
@@ -212,24 +232,30 @@
           </div>
         </div>
       </div>
-      
-      <div class="analysis-card">
+      <div class="analysis-card slide-in-up" style="animation-delay: 0.5s">
         <h3>System Performance Timeline</h3>
         <div class="chart-placeholder">
           <p>Performance timeline chart will appear here</p>
+          <p class="chart-description">System performance over time</p>
         </div>
       </div>
     </div>
-    
+
     <!-- Recommendations Tab -->
     <div *ngIf="activeTab === 'recommendations'" class="recommendations-tab">
       <div class="recommendations-list">
-        <div class="recommendation-item high-priority">
+        <div
+          class="recommendation-item high-priority slide-in-up"
+          style="animation-delay: 0.1s"
+        >
           <div class="recommendation-header">
             <h4>Optimize Database Timeout Handling</h4>
             <span class="badge badge-error">High Priority</span>
           </div>
-          <p>Implement connection pooling and timeout retry logic to address the most common cause of process abandonment.</p>
+          <p>
+            Implement connection pooling and timeout retry logic to address the
+            most common cause of process abandonment.
+          </p>
           <div class="recommendation-details">
             <div class="detail">
               <span class="label">Impact:</span>
@@ -249,13 +275,18 @@
             <button class="btn-text">View Details</button>
           </div>
         </div>
-        
-        <div class="recommendation-item medium-priority">
+        <div
+          class="recommendation-item medium-priority slide-in-up"
+          style="animation-delay: 0.2s"
+        >
           <div class="recommendation-header">
             <h4>Enhance Form Validation</h4>
             <span class="badge badge-warning">Medium Priority</span>
           </div>
-          <p>Implement client-side and server-side validation improvements to prevent validation errors leading to abandoned processes.</p>
+          <p>
+            Implement client-side and server-side validation improvements to
+            prevent validation errors leading to abandoned processes.
+          </p>
           <div class="recommendation-details">
             <div class="detail">
               <span class="label">Impact:</span>
@@ -275,13 +306,18 @@
             <button class="btn-text">View Details</button>
           </div>
         </div>
-        
-        <div class="recommendation-item medium-priority">
+        <div
+          class="recommendation-item medium-priority slide-in-up"
+          style="animation-delay: 0.3s"
+        >
           <div class="recommendation-header">
             <h4>Implement External Service Fallback</h4>
             <span class="badge badge-warning">Medium Priority</span>
           </div>
-          <p>Add fallback mechanisms and retry logic for external service calls to prevent process abandonment due to temporary service failures.</p>
+          <p>
+            Add fallback mechanisms and retry logic for external service calls
+            to prevent process abandonment due to temporary service failures.
+          </p>
           <div class="recommendation-details">
             <div class="detail">
               <span class="label">Impact:</span>
@@ -293,7 +329,9 @@
             </div>
             <div class="detail">
               <span class="label">Affected Services:</span>
-              <span class="value">Credit Check Service, Integration Middleware</span>
+              <span class="value"
+                >Credit Check Service, Integration Middleware</span
+              >
             </div>
           </div>
           <div class="recommendation-actions">
@@ -301,17 +339,24 @@
             <button class="btn-text">View Details</button>
           </div>
         </div>
-        
-        <div class="recommendation-item low-priority">
+        <div
+          class="recommendation-item low-priority slide-in-up"
+          style="animation-delay: 0.4s"
+        >
           <div class="recommendation-header">
             <h4>Periodic Database Cleanup</h4>
             <span class="badge badge-info">Low Priority</span>
           </div>
-          <p>Schedule automatic database cleanup jobs to purge completed and abandoned processes older than 30 days.</p>
+          <p>
+            Schedule automatic database cleanup jobs to purge completed and
+            abandoned processes older than 30 days.
+          </p>
           <div class="recommendation-details">
             <div class="detail">
               <span class="label">Impact:</span>
-              <span class="value">Reduce database size by approximately 30%</span>
+              <span class="value"
+                >Reduce database size by approximately 30%</span
+              >
             </div>
             <div class="detail">
               <span class="label">Effort:</span>
