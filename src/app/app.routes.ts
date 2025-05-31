@@ -16,10 +16,7 @@ export const routes: Routes = [
     path: 'processes',
     loadComponent: () => import('./processes/processes.component').then(m => m.ProcessesComponent)
   },
-  {
-    path: 'auth-login',
-    loadComponent: () => import('./auth-login/auth-login.component').then(m=>m.AuthLoginComponent)
-  },
+ 
 
 
   {
