@@ -1,0 +1,105 @@
+<!-- <div class="login-container">
+  <div class="form-div">
+    <div class="welcome-section">
+      <h2>BIENVENUE !</h2>
+      <div class="icons">
+        <img src="assets/globe.png" alt="Monde" class="icon" width="80%">
+        <img src="assets/pouce.png" alt="Pouce" class="icon" width="80%">
+      </div>
+    </div>
+    <form #loginForm="ngForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required [(ngModel)]="email" name="email" class="form-input" placeholder="Example@gmail.com">
+        <div *ngIf="emailM" class="error-message">{{emailM}}</div>
+      </div>
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" required [(ngModel)]="password" name="password" class="form-input" placeholder="Au moins 8 caractères">
+        <div *ngIf="passwordM" class="error-message">{{passwordM}}</div>
+      </div>
+      <div class="forgot-password">
+        <a href="#" class="forgot">Mot de passe oublié ?</a>
+      </div>
+      <button type="submit" class="login-button" (click)="login()">CONNEXION</button>
+      <div class="divider-container">
+        <hr class="divider">
+        <span class="connect-text">Ou se connecter avec</span>
+        <hr class="divider">
+      </div>
+      <div class="social-buttons">
+        <button type="button" class="social-button">
+          <img src="assets/goo.png" class="social-icon"> Google
+        </button>
+        <button type="button" class="social-button">
+          <img src="assets/fbk.jpg" class="social-icon"> Facebook
+        </button>
+      </div>
+      <div class="signup-link">
+        <a [routerLink]="['/signUp']">Vous n'avez pas un compte ? S'inscrire</a>
+      </div>
+    </form>
+    <footer class="footer">
+      &copy; 2024 MBOA. Tous droits réservés.
+    </footer>
+  </div>
+  <div class="image-div">
+    <img src="assets/imgAuth.jpg" alt="Image de connexion" class="image">
+  </div>
+</div>
+ -->
+ <section class="ftco-section">
+  <div class="container">
+    
+    <div class="row justify-content-center">
+      <div class="col-md-12 col-lg-10">
+        <div class="wrap d-md-flex">
+          <div class="img" style="background-image: url(assets/main7.jpg); background-size: cover;background-position: center;">
+          </div>
+
+          <div class="login-wrap p-4 p-md-5">
+            
+            <div class="d-flex justify-content-center mb-4">
+              <a class="app-brand-link ">
+                <span class="app-brand-text demo menu-text fw-bolder">Explorateur <span class="text-primary">Mboa</span></span>
+              </a>
+            </div>
+            <div class="d-flex">
+              <div class="w-100">
+                <h5 class="mb-4">Se Connecter</h5>
+              </div>
+              <div class="w-100">
+                <p class="social-media d-flex justify-content-end">
+                  <a href="#" class="social-icon d-flex align-items-center justify-content-center"><i class="bx bxl-facebook-circle"></i></a>
+                  <a href="#" class="social-icon d-flex align-items-center justify-content-center"><i class="bx bxl-google"></i></a>
+                </p>
+              </div>
+            </div>
+            @if(errorMessage){
+              <div class="text-danger mb-2">{{errorMessage}}</div>
+            }
+            <form class="signin-form" #loginForm="ngForm">
+              <div class="form-group mb-3">
+                <label class="label" for="name">Email</label>
+                <input type="email" id="email" class="form-control" placeholder="example@gmail.com" required [(ngModel)]="email" name="email">
+        <div *ngIf="emailM" class="error-message">{{emailM}}</div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="label" for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Au moins 8 caractères" required [(ngModel)]="password" name="password">
+                
+                <div *ngIf="passwordM" class="text-danger">{{passwordM}}</div>
+              </div>
+              
+              <div class="form-group">
+                <button type="submit" class="form-control btn btn-primary rounded submit px-3" (click)="login()">Se connecter</button>
+              </div>
+              
+            </form>
+            <p class="text-center">Pas de Compte ? <a [routerLink]="['/signUp']" class="signUp pointer">Inscrivez-vous</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -3,7 +3,12 @@
   <head>
     <title>APS First Monitoring - Afriland First Bank</title>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="assets/images/afriland-loader-taskbar.png"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
       rel="stylesheet"
@@ -12,18 +17,12 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
     />
-    <link
-      rel="icon"
-      type="image/png"
-      href="assets/images/afriland-loader-taskbar.png"
-    />
     <base href="/" />
     <style>
-      /* Loader background */
       #custom-loader-bg {
         position: fixed;
-        z-index: 99999;
         inset: 0;
+        z-index: 99999;
         background: #fff;
         display: flex;
         align-items: center;
@@ -38,19 +37,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        animation: loader-fadein 1s cubic-bezier(0.77, 0, 0.18, 1);
         position: relative;
-      }
-      @keyframes loader-fadein {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
       }
       .custom-loader-logo {
         width: 90px;
@@ -61,7 +48,7 @@
       }
       @keyframes logo-spin {
         0% {
-          transform: rotate(0deg) scale(1);
+          transform: rotate(0) scale(1);
         }
         80% {
           transform: rotate(360deg) scale(1.08);
@@ -69,14 +56,11 @@
         87% {
           transform: rotate(360deg) scale(1.12);
         }
-        92% {
-          transform: rotate(360deg) scale(1);
-        }
+        92%,
         100% {
           transform: rotate(360deg) scale(1);
         }
       }
-      /* Halo effect */
       .custom-loader-halo {
         position: absolute;
         width: 140px;
@@ -94,7 +78,8 @@
         pointer-events: none;
       }
       @keyframes halo-pulse {
-        0% {
+        0%,
+        100% {
           opacity: 0.7;
           transform: scale(1);
         }
@@ -106,13 +91,9 @@
           opacity: 0.8;
           transform: scale(1.13);
         }
-        100% {
-          opacity: 0.7;
-          transform: scale(1);
-        }
       }
       .custom-loader-text {
-        font-family: "Roboto", "Segoe UI", sans-serif;
+        font-family: Roboto, Segoe UI, sans-serif;
         font-size: 1.25rem;
         color: #c70000;
         font-weight: 600;
@@ -130,13 +111,10 @@
           transform: translateY(0);
         }
       }
-
-      /* Masquer app-root initialement */
       app-root {
         opacity: 0;
-        transition: opacity 0.5s ease-in-out;
+        transition: opacity 0.5s;
       }
-
       app-root.ready {
         opacity: 1;
       }
@@ -157,176 +135,47 @@
       </div>
     </div>
     <app-root></app-root>
-
     <script>
-      // Variables de contrôle
-      let angularReady = false;
-      let dataLoaded = false;
-      let loaderHidden = false;
-      let loaderStartTime = Date.now();
-
-      // Fonction pour masquer le loader (attend au moins 1s d'animation)
+      let loaderHidden = false,
+        loaderStart = Date.now();
       function hideLoader() {
         if (loaderHidden) return;
         loaderHidden = true;
-
-        const appRoot = document.querySelector("app-root");
-        const loader = document.getElementById("custom-loader-bg");
-        const elapsed = Date.now() - loaderStartTime;
-        const minDuration = 1000; // 1 seconde minimum
-
+        const appRoot = document.querySelector("app-root"),
+          loader = document.getElementById("custom-loader-bg");
+        const minDuration = 1000,
+          elapsed = Date.now() - loaderStart;
         function doHide() {
-          if (loader && appRoot) {
-            loader.classList.add("hide");
-            appRoot.classList.add("ready");
-            setTimeout(() => {
-              loader.style.display = "none";
-            }, 700);
-          }
+          loader.classList.add("hide");
+          appRoot.classList.add("ready");
+          setTimeout(() => {
+            loader.style.display = "none";
+          }, 700);
         }
-
-        if (elapsed < minDuration) {
-          setTimeout(doHide, minDuration - elapsed);
-        } else {
-          doHide();
-        }
+        elapsed < minDuration
+          ? setTimeout(doHide, minDuration - elapsed)
+          : doHide();
       }
-
-      // Vérifier si tout est prêt
-      function checkIfReady() {
-        if (angularReady && dataLoaded && !loaderHidden) {
-          hideLoader();
-        }
-      }
-
-      // Détecter quand Angular est prêt
-      function detectAngularReady() {
+      function checkReady() {
         const appRoot = document.querySelector("app-root");
         if (!appRoot) return;
-
-        // Méthode 1: Vérifier si du contenu a été injecté dans app-root
-        const checkContent = () => {
-          if (appRoot.children.length > 0 || appRoot.innerHTML.trim() !== "") {
-            angularReady = true;
-            checkIfReady();
-            return true;
-          }
-          return false;
-        };
-
-        // Vérification immédiate
-        if (checkContent()) return;
-
-        // Observer les mutations DOM dans app-root
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (
-              mutation.type === "childList" &&
-              mutation.addedNodes.length > 0
-            ) {
-              if (checkContent()) {
-                observer.disconnect();
-              }
+        if (appRoot.children.length || appRoot.innerHTML.trim()) hideLoader();
+        else {
+          const obs = new MutationObserver(() => {
+            if (appRoot.children.length || appRoot.innerHTML.trim()) {
+              hideLoader();
+              obs.disconnect();
             }
           });
-        });
-
-        observer.observe(appRoot, {
-          childList: true,
-          subtree: true,
-        });
-
-        // Fallback: timeout après 10 secondes
-        setTimeout(() => {
-          if (!angularReady) {
-            console.warn("Angular detection timeout - forcing ready state");
-            angularReady = true;
-            checkIfReady();
-            observer.disconnect();
-          }
-        }, 10000);
-      }
-
-      // Détecter quand les données sont chargées
-      function detectDataLoaded() {
-        // Méthode 1: Vérifier les éléments spécifiques de votre app
-        const checkDataElements = () => {
-          // Adaptez ces sélecteurs à votre application
-          const dataElements = document.querySelectorAll(
-            "[data-loaded], .data-ready, .content-ready"
-          );
-          const hasVisibleContent =
-            document.querySelectorAll("table, .card, .dashboard, .content")
-              .length > 0;
-
-          if (dataElements.length > 0 || hasVisibleContent) {
-            dataLoaded = true;
-            checkIfReady();
-            return true;
-          }
-          return false;
-        };
-
-        // Vérification périodique
-        const dataCheckInterval = setInterval(() => {
-          if (checkDataElements()) {
-            clearInterval(dataCheckInterval);
-          }
-        }, 500);
-
-        // Observer pour les changements dans le DOM
-        const observer = new MutationObserver(() => {
-          if (checkDataElements()) {
-            observer.disconnect();
-            clearInterval(dataCheckInterval);
-          }
-        });
-
-        // Observer tout le document pour les changements
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-        });
-
-        // Fallback: considérer les données comme chargées après 5 secondes
-        setTimeout(() => {
-          if (!dataLoaded) {
-            console.info("Data load timeout - assuming ready");
-            dataLoaded = true;
-            checkIfReady();
-            observer.disconnect();
-            clearInterval(dataCheckInterval);
-          }
-        }, 5000);
-      }
-
-      // Event listeners personnalisés pour votre app Angular
-      window.addEventListener("app-ready", () => {
-        angularReady = true;
-        checkIfReady();
-      });
-
-      window.addEventListener("data-loaded", () => {
-        dataLoaded = true;
-        checkIfReady();
-      });
-
-      // Démarrage de la détection
-      document.addEventListener("DOMContentLoaded", () => {
-        detectAngularReady();
-        detectDataLoaded();
-      });
-
-      // Fallback ultime: masquer le loader après 15 secondes
-      setTimeout(() => {
-        if (!loaderHidden) {
-          console.warn("Ultimate fallback: hiding loader after 15 seconds");
-          angularReady = true;
-          dataLoaded = true;
-          checkIfReady();
+          obs.observe(appRoot, { childList: true, subtree: true });
+          setTimeout(() => {
+            hideLoader();
+            obs.disconnect();
+          }, 10000);
         }
-      }, 15000);
+      }
+      document.addEventListener("DOMContentLoaded", checkReady);
+      setTimeout(hideLoader, 15000);
     </script>
   </body>
 </html>
