@@ -16,7 +16,7 @@ export const routes: Routes = [
       import("./auth/login/login.component").then((m) => m.LoginComponent),
     canActivate: [RedirectRouteGuard],
   },
- 
+
   {
     path: "verification",
     loadComponent: () =>
