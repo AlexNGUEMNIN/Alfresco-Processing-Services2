@@ -42,34 +42,7 @@ export class LoginComponent {
   }
   
 
-  login() {
-    // if (this.verification()) {
-      
-    //   this.errorMessage = undefined;
-    //   this.authService.login(this.email, this.password!).subscribe({
-    //     next: (rep: any) => {
-        
-    //       console.log(rep);
-    //       this.authService.setBearerToken(rep?.token.bearer);
-    //       this.authService.setRefreshToken(rep?.token.refresh);
-    //       this.authService.setCurrentAuthUser(rep?.utilisateur as IUtilisateur);
-    //       localStorage.setItem("authUser", JSON.stringify(this.authService.getCurrentAuthUser()));
-    //       this.authUser = this.authService.getCurrentAuthUser();
-    //       if (this.authUser?.role?.libelle == Role.ADMINISTRATEUR || this.authUser?.role?.libelle == Role.MODERATEUR || this.authUser?.role?.libelle == Role.COLLECTEUR || this.authUser?.role?.libelle == Role.JOURNALISTE) {
-    //         this.router.navigate(['/admin']);
-    //       }
-    //       if (this.authUser?.role?.libelle == Role.UTILISATEUR) {
-    //         this.router.navigate(['/home']);
-    //       }
-    //     },
-    //     error: (err: any) => {
-    //       this.handleError(err);
-    //       console.log(err);
-    //       console.log(this.errorMessage);
-    //     }
-    //   });
-    // }
-  }
+  
 
   private handleError(err: HttpErrorResponse) {
     if (err.status === 401) {

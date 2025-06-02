@@ -5,9 +5,12 @@ import { provideRouter } from "@angular/router";
 import { SidebarComponent } from "./shared/components/sidebar/sidebar.component";
 import { HeaderComponent } from "./shared/components/header/header.component";
 import { routes } from "./app.routes";
+import { provideHttpClient } from '@angular/common/http';
 
 export class App {}
 
 bootstrapApplication(App, {
-  providers: [provideRouter(routes)],
-});
+  providers: [provideRouter(routes),
+    provideHttpClient()
+  ],
+}); 
