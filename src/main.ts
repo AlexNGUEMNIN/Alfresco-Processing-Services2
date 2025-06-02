@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 import { SidebarComponent } from './app/shared/components/sidebar/sidebar.component';
 import { HeaderComponent } from './app/shared/components/header/header.component';
 import { routes } from './app/app.routes';
@@ -58,6 +59,7 @@ export class App {
 
 bootstrapApplication(App, {
   providers: [
-    provideRouter(routes)
+    provideRouter(routes),
+    provideHttpClient()
   ]
 });
