@@ -43,104 +43,47 @@
   </div>
 
   <!-- Table Container -->
-  <div id="tableContainer" class="table-container responsive-table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Type</th>
-          <th>Statut</th>
-          <th>Date de Début</th>
-          <th>Dernière Activité</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="processTableBody">
-        <tr onclick="selectProcess(this)" data-id="APS-2024-001">
-          <td data-label="ID">APS-2024-001</td>
-          <td data-label="Nom">Demande de Prêt Personnel</td>
-          <td data-label="Type">Crédit</td>
-          <td data-label="Statut">
-            <span class="badge status-active">Actif</span>
-          </td>
-          <td data-label="Date de Début">28 Mai 2025, 09:30</td>
-          <td data-label="Dernière Activité">28 Mai 2025, 14:25</td>
-          <td data-label="Actions">
-            <div class="action-buttons">
-              <button
-                class="btn-icon"
-                onclick="terminateProcess('APS-2024-001'); event.stopPropagation()"
-              >
-                <span class="material-icons" title="Terminer Processus"
-                  >stop_circle</span
-                >
-              </button>
-              <button
-                class="btn-icon"
-                onclick="selectProcess(this); event.stopPropagation()"
-              >
-                <span class="material-icons" title="Voir Détails"
-                  >visibility</span
-                >
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr onclick="selectProcess(this)" data-id="APS-2024-002">
-          <td data-label="ID">APS-2024-002</td>
-          <td data-label="Nom">Validation KYC Client</td>
-          <td data-label="Type">Conformité</td>
-          <td data-label="Statut">
-            <span class="badge status-abandoned">Abandonné</span>
-          </td>
-          <td data-label="Date de Début">27 Mai 2025, 16:45</td>
-          <td data-label="Dernière Activité">28 Mai 2025, 08:12</td>
-          <td data-label="Actions">
-            <div class="action-buttons">
-              <button
-                class="btn-icon"
-                onclick="restartProcess('APS-2024-002'); event.stopPropagation()"
-              >
-                <span class="material-icons" title="Redémarrer Processus"
-                  >play_circle</span
-                >
-              </button>
-              <button
-                class="btn-icon"
-                onclick="selectProcess(this); event.stopPropagation()"
-              >
-                <span class="material-icons" title="Voir Détails"
-                  >visibility</span
-                >
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr onclick="selectProcess(this)" data-id="APS-2024-003">
-          <td data-label="ID">APS-2024-003</td>
-          <td data-label="Nom">Analyse de Risque</td>
-          <td data-label="Type">Évaluation</td>
-          <td data-label="Statut">
-            <span class="badge status-terminated">Terminé</span>
-          </td>
-          <td data-label="Date de Début">26 Mai 2025, 11:20</td>
-          <td data-label="Dernière Activité">27 Mai 2025, 15:30</td>
-          <td data-label="Actions">
-            <div class="action-buttons">
-              <button
-                class="btn-icon"
-                onclick="selectProcess(this); event.stopPropagation()"
-              >
-                <span class="material-icons" title="Voir Détails"
-                  >visibility</span
-                >
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
+  <mat-form-field>
+    <input
+      matInput
+      (keyup)="applyFilter($any($event.target).value)"
+      placeholder="Filter"
+    />
+  </mat-form-field>
+
+  <div class="mat-elevation-z8">
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <td mat-cell *matCellDef="let row">{{ row.id }}</td>
+      </ng-container>
+
+      <!-- Progress Column -->
+      <ng-container matColumnDef="progress">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Progress</th>
+        <td mat-cell *matCellDef="let row">{{ row.progress }}%</td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+        <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+      </ng-container>
+
+      <!-- Color Column -->
+      <ng-container matColumnDef="color">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Color</th>
+        <td mat-cell *matCellDef="let row" [style.color]="row.color">
+          {{ row.color }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
   </div>
 
   <!-- Empty State -->
