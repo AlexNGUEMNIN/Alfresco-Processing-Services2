@@ -1,6 +1,4 @@
 import { Routes } from "@angular/router";
-import { AuthGuard } from "./core/services/auth.guard";
-import { RedirectRouteGuard } from "./core/services/redirect-route.guard";
 import { AuthLayoutComponent } from "./layouts/auth-layout/auth-layout.component";
 import { MainLayoutComponent } from "./layouts/main-layout/main-layout.component";
 import { LoginComponent } from "./auth/login/login.component";

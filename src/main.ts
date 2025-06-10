@@ -1,8 +1,9 @@
-import { Component } from "@angular/core";
+import {Component, importProvidersFrom} from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { bootstrapApplication } from "@angular/platform-browser";
 import { provideRouter } from "@angular/router";
 import { routes } from "./app/app.routes";
+import {HttpClientModule} from "@angular/common/http";
 
 @Component({
   selector: "app-root",
@@ -14,5 +15,8 @@ import { routes } from "./app/app.routes";
 export class App {}
 
 bootstrapApplication(App, {
-  providers: [provideRouter(routes)],
+  providers: [
+    provideRouter(routes),
+    importProvidersFrom(HttpClientModule), // ✅ reliable across Angular versions
+  ]
 });
