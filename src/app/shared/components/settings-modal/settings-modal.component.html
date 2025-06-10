@@ -1,0 +1,159 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>
+        <span class="material-icons">settings</span>
+        Paramètres Système
+      </h3>
+      <div class="header-actions">
+        <button class="btn-icon refresh-btn" (click)="refreshStats()" [disabled]="loading">
+          <span class="material-icons" [class.spinning]="loading">refresh</span>
+        </button>
+        <button class="btn-icon close-btn" (click)="onClose()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Chargement des statistiques...</p>
+      </div>
+
+      <div *ngIf="!loading" class="settings-content">
+        <!-- Theme Toggle Section -->
+        <div class="settings-section">
+          <div class="section-header">
+            <h4>
+              <span class="material-icons">palette</span>
+              Apparence
+            </h4>
+          </div>
+          <div class="theme-toggle-container">
+            <div class="theme-option">
+              <span class="material-icons">light_mode</span>
+              <span>Mode Jour</span>
+            </div>
+            <div class="toggle-switch" (click)="toggleTheme()">
+              <div class="toggle-slider" [class.active]="isDarkMode"></div>
+            </div>
+            <div class="theme-option">
+              <span class="material-icons">dark_mode</span>
+              <span>Mode Nuit</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Overview Section -->
+        <div class="settings-section" *ngIf="systemStats">
+          <div class="section-header">
+            <h4>
+              <span class="material-icons">dashboard</span>
+              Vue d'ensemble du système
+            </h4>
+          </div>
+          <div class="system-overview">
+            <div class="overview-card">
+              <div class="card-icon">
+                <span class="material-icons">memory</span>
+              </div>
+              <div class="card-content">
+                <h5>Processus Total</h5>
+                <div class="card-value">{{ systemStats.totalProcesses | number }}</div>
+              </div>
+            </div>
+            <div class="overview-card">
+              <div class="card-icon uptime">
+                <span class="material-icons">schedule</span>
+              </div>
+              <div class="card-content">
+                <h5>Temps de fonctionnement</h5>
+                <div class="card-value">{{ systemStats.systemUptime }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Process Status Section -->
+        <div class="settings-section">
+          <div class="section-header">
+            <h4>
+              <span class="material-icons">analytics</span>
+              Statut des Processus
+            </h4>
+          </div>
+          <div class="process-status-list">
+            <div 
+              *ngFor="let status of processStatusCounts" 
+              class="status-item"
+            >
+              <div class="status-info">
+                <div class="status-label">
+                  <div class="status-dot" [style.background-color]="status.color"></div>
+                  <span>{{ status.status }}</span>
+                </div>
+                <div class="status-count">{{ status.count | number }}</div>
+              </div>
+              <div class="status-progress">
+                <div class="progress-bar">
+                  <div 
+                    class="progress-fill" 
+                    [style.width]="getProgressWidth(status.percentage)"
+                    [style.background-color]="status.color"
+                  ></div>
+                </div>
+                <span class="percentage">{{ status.percentage }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Stats Section -->
+        <div class="settings-section" *ngIf="systemStats">
+          <div class="section-header">
+            <h4>
+              <span class="material-icons">info</span>
+              Informations détaillées
+            </h4>
+          </div>
+          <div class="detailed-stats">
+            <div class="stat-row">
+              <span class="stat-label">Processus actifs:</span>
+              <span class="stat-value active">{{ systemStats.activeProcesses | number }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Processus en attente:</span>
+              <span class="stat-value pending">{{ systemStats.pendingProcesses | number }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Processus terminés:</span>
+              <span class="stat-value completed">{{ systemStats.completedProcesses | number }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Processus arrêtés:</span>
+              <span class="stat-value stopped">{{ systemStats.stoppedProcesses | number }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Processus abandonnés:</span>
+              <span class="stat-value abandoned">{{ systemStats.abandonedProcesses | number }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Dernière mise à jour:</span>
+              <span class="stat-value">{{ systemStats.lastUpdate | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="footer-info">
+        <span>APS First Monitoring v1.0 - Afriland First Bank</span>
+      </div>
+      <button class="btn btn-primary" (click)="onClose()">
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>
