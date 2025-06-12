@@ -86,6 +86,19 @@
                     }}</span>
                   </td>
                 </ng-container>
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>
+                    <span class="column-header">Actions</span>
+                  </th>
+                  <td mat-cell *matCellDef="let process">
+                    <app-task-actions
+                      [processData]="process"
+                      (stopProcess)="onStopProcess($event)"
+                      (transferTask)="onTransferTask($event)">
+                    </app-task-actions>
+                  </td>
+                </ng-container>
                 <tr
                   mat-header-row
                   *matHeaderRowDef="displayedColumns"
@@ -108,4 +121,25 @@
       </mat-tab>
     </mat-tab-group>
   </div>
+</div>
+
+<!-- Modal de transfert de tâche -->
+<app-task-transfer-modal
+  [isOpen]="showTransferModal"
+  [taskData]="selectedTaskForTransfer"
+  (closeModal)="onCloseTransferModal()"
+  (taskTransferred)="onTaskTransferred($event)">
+</app-task-transfer-modal>
+
+<!-- Toast notifications -->
+<div class="toast-notifications">
+  <app-toast-notification
+    *ngFor="let toast of toasts"
+    [title]="toast.title"
+    [message]="toast.message"
+    [type]="toast.type"
+    [duration]="toast.duration"
+    [isVisible]="true"
+    (closed)="removeToast(toast.id)">
+  </app-toast-notification>
 </div>

@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../core/services/notification.service';
+import { TaskService } from '../../../core/services/task.service';
 import { HelpService } from '../../../core/services/help.service';
 import { NotificationsModalComponent } from '../notifications-modal/notifications-modal.component';
 import { SettingsModalComponent } from '../settings-modal/settings-modal.component';
+import { combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -20,6 +22,7 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
+    private taskService: TaskService,
     private helpService: HelpService
   ) {}
 
@@ -33,8 +36,12 @@ export class HeaderComponent implements OnInit {
   }
 
   loadNotificationCount(): void {
-    this.notificationService.getNotificationCount().subscribe(count => {
-      this.notificationCount = count;
+    // Combiner les notifications des processus et des tâches
+    combineLatest([
+      this.notificationService.getNotificationCount(),
+      this.taskService.getUnreadNotificationCount()
+    ]).subscribe(([processCount, taskCount]) => {
+      this.notificationCount = processCount + taskCount;
     });
   }
 

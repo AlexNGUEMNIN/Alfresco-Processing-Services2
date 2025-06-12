@@ -533,6 +533,22 @@
   border-bottom: 1px solid #fee2e2 !important;
 }
 
+/* Toast notifications container */
+.toast-notifications {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  pointer-events: none;
+}
+
+.toast-notifications app-toast-notification {
+  pointer-events: all;
+}
+
 /* Animation d'entrée */
 @keyframes fadeIn {
   from {
@@ -563,6 +579,12 @@
   .table-paginator .mat-paginator-range-label {
     margin: 0 16px !important;
     font-size: 0.85rem !important;
+  }
+
+  .toast-notifications {
+    right: 10px;
+    left: 10px;
+    top: 90px;
   }
 }
 
