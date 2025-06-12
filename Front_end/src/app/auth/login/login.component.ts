@@ -1,0 +1,53 @@
+import { Component } from '@angular/core';
+import {Router, RouterLink} from '@angular/router';
+import {AuthService} from "../../core/services/auth.service";
+import {FormsModule} from "@angular/forms";
+import {NgIf} from "@angular/common";
+
+@Component({
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss'],
+    imports: [
+        RouterLink,
+        FormsModule,
+        NgIf
+    ],
+    standalone: true
+})
+export class LoginComponent {
+    email: string = '';
+    password: string = '';
+    errorMessage: string = '';
+    emailM: string = '';
+    passwordM: string = '';
+
+    constructor(private authService: AuthService, private router: Router) {}
+
+    login() {
+        this.errorMessage = '';
+        this.emailM = '';
+        this.passwordM = '';
+
+        if (!this.email.includes('@')) {
+            this.emailM = 'Adresse email invalide';
+        }
+
+        if (this.password.length < 3) {
+            this.passwordM = 'Mot de passe trop court';
+        }
+
+        if (this.emailM || this.passwordM) {
+            return;
+        }
+
+        this.authService.login(this.email, this.password).subscribe({
+            next: () => {
+                this.router.navigate(['/dashboard']); // or your target route
+            },
+            error: (err) => {
+                this.errorMessage = 'Échec de connexion. Vérifiez vos identifiants.';
+            },
+        });
+    }
+}

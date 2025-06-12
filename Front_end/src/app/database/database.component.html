@@ -1,0 +1,275 @@
+<br /><br /><br /><br />
+<div class="database-container responsive-database fade-in">
+  <!-- En-tête -->
+  <div class="processes-container fade-in">
+    <div class="processes-header slide-in-down">
+      <h2>Supervision de la base de données</h2>
+    </div>
+  </div>
+
+  <!-- Skeleton de chargement -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="skeleton-header skeleton-animate"></div>
+    <div class="skeleton-cards">
+      <div class="skeleton-card skeleton-animate"></div>
+      <div class="skeleton-card skeleton-animate"></div>
+      <div class="skeleton-card skeleton-animate"></div>
+    </div>
+    <div class="skeleton-table skeleton-animate"></div>
+    <div class="skeleton-chart skeleton-animate"></div>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading" class="database-content fade-in">
+    <!-- Résumé des métriques -->
+    <div class="summary-card slide-in-up">
+      <div class="summary-content">
+        <div class="summary-section">
+          <h3>Vue d'ensemble de la base</h3>
+          <p>Surveillez les tables clés impactées par les processus APS.</p>
+        </div>
+        <div class="summary-section">
+          <div class="summary-stats">
+            <div class="stat">
+              <span class="label">Taille :</span>
+              <span class="value">1 256,4 Mo</span>
+            </div>
+            <div class="stat">
+              <span class="label">Tables :</span>
+              <span class="value">5</span>
+            </div>
+            <div class="stat">
+              <span class="label">Taux de croissance :</span>
+              <span class="value critical">7,8%</span>
+            </div>
+          </div>
+        </div>
+        <div class="summary-section">
+          <button class="btn btn-primary">
+            <span class="material-icons">trending_up</span>
+            Voir l'analyse de croissance
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables clés -->
+    <div class="tables-section slide-in-up">
+      <h3>Tables principales</h3>
+      <div class="table-container responsive-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom de la table</th>
+              <th>Taille (Mo)</th>
+              <th>Lignes</th>
+              <th>Croissance (%)</th>
+              <th>Dernière mise à jour</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let table of tables">
+              <td data-label="Nom de la table">{{ table.name }}</td>
+              <td data-label="Taille (Mo)">
+                {{ table.size | number : "1.1-1" }}
+              </td>
+              <td data-label="Lignes">{{ table.rows | number }}</td>
+              <td
+                data-label="Croissance (%)"
+                [ngClass]="{
+                  critical: table.growth > 10,
+                  warning: table.growth > 5 && table.growth <= 10
+                }"
+              >
+                {{ table.growth | number : "1.1-1" }}%
+              </td>
+              <td data-label="Dernière mise à jour">
+                {{ table.lastUpdated | date : "medium" }}
+              </td>
+              <td data-label="Statut">
+                <span class="badge" [ngClass]="getStatusClass(table.status)">
+                  {{ table.status }}
+                </span>
+              </td>
+              <td data-label="Actions">
+                <button
+                  class="btn btn-sm"
+                  [disabled]="optimizingTable === table.name"
+                  (click)="optimizeTable(table.name)"
+                >
+                  <span
+                    class="material-icons"
+                    *ngIf="optimizingTable !== table.name"
+                    >build</span
+                  >
+                  <span
+                    class="spinner"
+                    *ngIf="optimizingTable === table.name"
+                  ></span>
+                  {{
+                    optimizingTable === table.name
+                      ? "Optimisation..."
+                      : "Optimiser"
+                  }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Graphique de croissance -->
+    <div class="growth-chart-section slide-in-up">
+      <h3>Tendance de croissance des tables</h3>
+      <div class="chart-card">
+        <div class="chart-placeholder">
+          <p>Le graphique de tendance de croissance apparaîtra ici</p>
+          <p class="chart-description">
+            Visualisez l'évolution de la taille des tables dans le temps
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Requêtes lentes -->
+    <div *ngIf="slowQueries.length > 0" class="queries-section slide-in-up">
+      <h3>Requêtes lentes</h3>
+      <div class="queries-list">
+        <div
+          *ngFor="let query of slowQueries"
+          class="query-card"
+          [ngClass]="getStatusClass(query.status)"
+        >
+          <div class="query-header">
+            <h4>Requête {{ query.id }}</h4>
+            <span class="badge" [ngClass]="getStatusClass(query.status)">
+              {{ query.status }}
+            </span>
+          </div>
+          <div class="query-details">
+            <code class="query-code">{{ query.query }}</code>
+            <div class="query-stats">
+              <div class="stat">
+                <span class="label">Temps d'exécution moyen :</span>
+                <span class="value"
+                  >{{ query.avgExecutionTime | number : "1.0-0" }} ms</span
+                >
+              </div>
+              <div class="stat">
+                <span class="label">Exécutions :</span>
+                <span class="value">{{ query.executions }}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Dernière exécution :</span>
+                <span class="value">{{
+                  query.lastExecuted | date : "medium"
+                }}</span>
+              </div>
+            </div>
+            <div class="query-actions">
+              <button class="btn btn-sm">Optimiser la requête</button>
+              <button class="btn btn-sm btn-outline">Voir détails</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Responsive styles for database supervision -->
+<style>
+  .responsive-database {
+    padding: 2rem;
+  }
+  @media (max-width: 1200px) {
+    .responsive-database {
+      padding: 1rem;
+    }
+    .summary-card,
+    .tables-section,
+    .growth-chart-section,
+    .queries-section {
+      padding: 1rem;
+    }
+  }
+  @media (max-width: 900px) {
+    .database-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+  @media (max-width: 768px) {
+    .responsive-database {
+      padding: 0.5rem;
+    }
+    .database-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .responsive-table-container {
+      overflow-x: auto;
+    }
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+      display: block;
+      width: 100%;
+    }
+    thead {
+      display: none;
+    }
+    tr {
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #eee;
+      background: #fff;
+    }
+    td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+      min-height: 2.5rem;
+      box-sizing: border-box;
+    }
+    td:before {
+      position: absolute;
+      left: 0;
+      width: 50%;
+      padding-left: 1rem;
+      white-space: nowrap;
+      font-weight: bold;
+      text-align: left;
+      content: attr(data-label);
+      color: #333;
+    }
+    .query-card {
+      padding: 1rem;
+    }
+  }
+  @media (max-width: 480px) {
+    .responsive-database {
+      padding: 0.2rem;
+    }
+    .database-header h2 {
+      font-size: 1.2rem;
+    }
+    .summary-card,
+    .tables-section,
+    .growth-chart-section,
+    .queries-section {
+      padding: 0.5rem;
+    }
+    .btn,
+    .btn-sm {
+      font-size: 0.95rem;
+      padding: 0.5rem 1rem;
+    }
+  }
+</style>
