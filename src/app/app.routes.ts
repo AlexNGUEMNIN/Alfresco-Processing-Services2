@@ -1,74 +1,105 @@
 import { Routes } from "@angular/router";
 import { AuthLayoutComponent } from "./layouts/auth-layout/auth-layout.component";
 import { MainLayoutComponent } from "./layouts/main-layout/main-layout.component";
-import { LoginComponent } from "./auth/login/login.component";
+import { LoginComponent } from "./components/auth/login/login.component";
+import { AuthGuard } from "./core/services/auth.guard";
 
 export const routes: Routes = [
   {
-    path: '',
+    path: "",
     component: AuthLayoutComponent,
     children: [
       {
-        path: 'login', component: LoginComponent,
+        path: "login",
+        component: LoginComponent,
       },
       {
-        path: 'verification',
-        loadComponent: () => import('./auth/verification/verification.component')
-          .then(m => m.VerificationComponent)
+        path: "verification",
+        loadComponent: () =>
+          import("./components/auth/verification/verification.component").then(
+            (m) => m.VerificationComponent
+          ),
       },
       {
-        path: 'resetMdp',
-        loadComponent: () => import('./auth/resetmdp/resetmdp.component')
-          .then(m => m.ResetmdpComponent)
+        path: "resetMdp",
+        loadComponent: () =>
+          import("./components/auth/resetmdp/resetmdp.component").then(
+            (m) => m.ResetmdpComponent
+          ),
       },
       {
-        path: 'emailVerif',
-        loadComponent: () => import('./auth/emailverification/emailverification.component')
-          .then(m => m.EmailverificationComponent)
+        path: "emailVerif",
+        loadComponent: () =>
+          import(
+            "./components/auth/emailverification/emailverification.component"
+          ).then((m) => m.EmailverificationComponent),
       },
       {
-        path: '',
-        redirectTo: 'login',
-        pathMatch: 'full'
-      }
-    ]
+        path: "",
+        redirectTo: "login",
+        pathMatch: "full",
+      },
+    ],
   },
   {
-    path: '',
+    path: "",
     component: MainLayoutComponent,
     // canActivate: [AuthGuard],
     children: [
       {
-        path: 'dashboard',
-        loadComponent: () => import('./dashboard/dashboard.component')
-          .then(m => m.DashboardComponent)
+        path: "dashboard",
+        loadComponent: () =>
+          import("./components/dashboard/dashboard.component").then(
+            (m) => m.DashboardComponent
+          ),
       },
       {
-        path: 'processes',
-        loadComponent: () => import('./processes/processes.component')
-          .then(m => m.ProcessesComponent)
+        path: "processes",
+        loadComponent: () =>
+          import("./components/processes/processes.component").then(
+            (m) => m.ProcessesComponent
+          ),
+      },{
+        path: "process-dynamics",
+        loadComponent: () =>
+          import("./components/process-dynamics/process-dynamics.component").then(
+            (m) => m.ProcessDynamicsComponent
+          ),
       },
       {
-        path: 'analysis',
-        loadComponent: () => import('./analysis/analysis.component')
-          .then(m => m.AnalysisComponent)
+        path: "analysis",
+        loadComponent: () =>
+          import("./components/analysis/analysis.component").then(
+            (m) => m.AnalysisComponent
+          ),
       },
       {
-        path: 'database',
-        loadComponent: () => import('./database/database.component')
-          .then(m => m.DatabaseComponent)
+        path: "database",
+        loadComponent: () =>
+          import("./components/database/database.component").then(
+            (m) => m.DatabaseComponent
+          ),
       },
       {
-        path: 'admin',
-        loadComponent: () => import('./admin/admin.component')
-          .then(m => m.AdminComponent)
+        path: "admin",
+        loadComponent: () =>
+          import("./components/admin/admin.component").then(
+            (m) => m.AdminComponent
+          ),
       },
       {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      }
-    ]
+        path: "task",
+        loadComponent: () =>
+          import("./components/task/task.component").then(
+            (m) => m.TaskComponent
+          ),
+      },
+      {
+        path: "",
+        redirectTo: "dashboard",
+        pathMatch: "full",
+      },
+    ],
   },
-  { path: '**', redirectTo: '/login' }
+  { path: "**", redirectTo: "/login" },
 ];

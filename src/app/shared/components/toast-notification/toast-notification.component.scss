@@ -28,6 +28,10 @@
   max-width: 450px;
   animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
+  &.fade-out {
+    animation: fadeInOut 3s ease forwards;
+  }
+
   &.toast-success {
     border-left-color: #10B981;
 
@@ -141,5 +145,20 @@
     min-width: auto;
     max-width: none;
     width: 100%;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  10%, 90% {
+    opacity: 0.98;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
   }
 }

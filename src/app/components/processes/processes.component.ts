@@ -3,16 +3,20 @@ import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator } from "@angular/material/paginator";
 import { MatSort } from "@angular/material/sort";
 import { MatTabChangeEvent } from "@angular/material/tabs";
-import { DatePipe } from "@angular/common";
+import { DatePipe, CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { Subscription } from "rxjs";
+
 import {
   ProcessData,
   ProcessResponse,
   ProcessService,
-} from "../core/services/process.service";
-import { TaskService } from "../core/services/task.service";
-import { ToastService, ToastMessage } from "../core/services/toast.service";
-import { Subscription } from "rxjs";
-import { CommonModule } from "@angular/common";
+} from "../../core/services/process.service";
+import { TaskService } from "../../core/services/task.service";
+import { ToastService, ToastMessage } from "../../core/services/toast.service";
+import { Task, TaskAssignment } from "../../core/models/task.model";
+
+// Angular Material modules
 import { MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
@@ -22,11 +26,12 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { FormsModule } from "@angular/forms";
-import { TaskActionsComponent } from "../shared/components/task-actions/task-actions.component";
-import { TaskTransferModalComponent } from "../shared/components/task-transfer-modal/task-transfer-modal.component";
-import { ToastNotificationComponent } from "../shared/components/toast-notification/toast-notification.component";
-import { Task, TaskAssignment } from "../core/models/task.model";
+
+// Shared components
+import { TaskActionsComponent } from "../../shared/components/task-actions/task-actions.component";
+import { TaskTransferModalComponent } from "../../shared/components/task-transfer-modal/task-transfer-modal.component";
+import { ToastNotificationComponent } from "../../shared/components/toast-notification/toast-notification.component";
+import { TasksService } from "../../core/services/tasks.service";
 
 @Component({
   selector: "app-processes",
@@ -43,10 +48,9 @@ import { Task, TaskAssignment } from "../core/models/task.model";
     MatButtonModule,
     MatTabsModule,
     MatTooltipModule,
-    DatePipe,
     TaskActionsComponent,
     TaskTransferModalComponent,
-    ToastNotificationComponent
+    ToastNotificationComponent,
   ],
   templateUrl: "./processes.component.html",
   styleUrls: ["./processes.component.scss"],
@@ -56,30 +60,38 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   activeTabIndex = 0;
   loading = true;
   tabs = [
-    { label: "Initiateur uniquement", key: "processusInitiateurSeulement", count: 0 },
-    { label: "Processus longs", key: "processusLongs", count: 0 },
-    { label: "Sans tâches", key: "processusSansTâches", count: 0 },
-    { label: "Échecs", key: "nombreProcessusÉchoués", count: 0 },
+    {
+      label: "Uniquement par son initiateur",
+      key: "processusInitiateurSeulement",
+      count: 0,
+    },
+    { label: "Qu'une seule tâche exécutée", key: "processusLongs", count: 0 },
+    {
+      label: "Avec erreur/exception technique",
+      key: "processusSansTâches",
+      count: 0,
+    },
+    {
+      label: "Sans aucune tâche utilisateur",
+      key: "nombreProcessusÉchoués",
+      count: 0,
+    },
   ];
 
-  displayedColumns: string[] = [
+  displayedColumns = [
     "processInstanceId",
     "processDefinitionId",
     "processStartTime",
     "processInitiator",
-    "actions"
+    "actions",
   ];
-  
-  dataSource: MatTableDataSource<ProcessData> = new MatTableDataSource<ProcessData>([]);
+  dataSource = new MatTableDataSource<ProcessData>([]);
   processData: ProcessResponse | null = null;
-  
-  // Modal et transfert
+
   showTransferModal = false;
   selectedTaskForTransfer: Task | null = null;
-  
-  // Toast notifications
   toasts: ToastMessage[] = [];
-  
+
   private socketSubscription!: Subscription;
   private toastSubscription!: Subscription;
 
@@ -89,6 +101,7 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   constructor(
     private webSocketService: ProcessService,
     private taskService: TaskService,
+    private tasksService: TasksService,
     private toastService: ToastService,
     private datePipe: DatePipe
   ) {}
@@ -96,19 +109,17 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loading = true;
     this.subscribeToToasts();
-    setTimeout(() => {
-      this.connectToWebSocket();
-    }, 800);
+    setTimeout(() => this.connectToWebSocket(), 800);
   }
 
   ngOnDestroy(): void {
-    if (this.socketSubscription) this.socketSubscription.unsubscribe();
-    if (this.toastSubscription) this.toastSubscription.unsubscribe();
+    this.socketSubscription?.unsubscribe();
+    this.toastSubscription?.unsubscribe();
     this.webSocketService.close();
   }
 
   subscribeToToasts(): void {
-    this.toastSubscription = this.toastService.toasts$.subscribe(toasts => {
+    this.toastSubscription = this.toastService.toasts$.subscribe((toasts) => {
       this.toasts = toasts;
     });
   }
@@ -127,7 +138,7 @@ export class ProcessesComponent implements OnInit, OnDestroy {
         setTimeout(() => this.connectToWebSocket(), 5000);
       },
       complete: () => {
-        console.warn("WebSocket completed unexpectedly");
+        console.warn("WebSocket connection closed. Reconnecting...");
         setTimeout(() => this.connectToWebSocket(), 5000);
       },
     });
@@ -135,17 +146,16 @@ export class ProcessesComponent implements OnInit, OnDestroy {
 
   refreshData(): void {
     this.loading = true;
-    setTimeout(() => {
-      this.connectToWebSocket();
-    }, 800);
+    setTimeout(() => this.connectToWebSocket(), 800);
   }
 
   updateTabCounts(): void {
     if (!this.processData) return;
-    this.tabs[0].count = this.processData.processusInitiateurSeulement?.nombre || 0;
+    this.tabs[0].count =
+      this.processData.processusInitiateurSeulement?.nombre || 0;
     this.tabs[1].count = this.processData.processusLongs?.nombre || 0;
     this.tabs[2].count = this.processData.processusSansTâches?.nombre || 0;
-    this.tabs[3].count = this.processData.nombreProcessusÉchoués || 0;
+    this.tabs[3].count = this.processData.ProcessusÉchoués?.nombre || 0;
   }
 
   onTabChange(event: MatTabChangeEvent): void {
@@ -157,9 +167,11 @@ export class ProcessesComponent implements OnInit, OnDestroy {
     if (!this.processData) return;
 
     let processes: ProcessData[] = [];
+
     switch (tabIndex) {
       case 0:
-        processes = this.processData.processusInitiateurSeulement?.processus || [];
+        processes =
+          this.processData.processusInitiateurSeulement?.processus || [];
         break;
       case 1:
         processes = this.processData.processusLongs?.processus || [];
@@ -168,8 +180,10 @@ export class ProcessesComponent implements OnInit, OnDestroy {
         processes = this.processData.processusSansTâches?.processus || [];
         break;
       case 3:
-        processes = [];
+        processes = this.processData.ProcessusÉchoués?.processus || []; // ✅ Add this
         break;
+      default:
+        processes = [];
     }
 
     this.dataSource = new MatTableDataSource(processes);
@@ -180,61 +194,82 @@ export class ProcessesComponent implements OnInit, OnDestroy {
       data: ProcessData,
       filter: string
     ): boolean => {
-      const lowercase = filter.trim().toLowerCase();
+      const f = filter.toLowerCase().trim();
       return (
-        data.processInstanceId?.toLowerCase().includes(lowercase) ||
-        data.processDefinitionId?.toLowerCase().includes(lowercase) ||
-        data.processInitiator?.toLowerCase().includes(lowercase)
+        data.processInstanceId?.toLowerCase().includes(f) ||
+        data.processDefinitionId?.toLowerCase().includes(f) ||
+        data.processInitiator?.toLowerCase().includes(f)
       );
     };
   }
 
   applyFilter(value: string): void {
     this.dataSource.filter = value.trim().toLowerCase();
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+    this.dataSource.paginator?.firstPage();
   }
 
   formatDate(dateString: string): string {
     return this.datePipe.transform(dateString, "medium") || "";
   }
 
-  onStopProcess(processId: string): void {
-    this.taskService.stopProcess(processId).subscribe({
+  onToggleProcessSuspension(processId: string, isSuspended: boolean): void {
+    const action$ = isSuspended
+      ? this.tasksService.ResumeProcess(processId) // If suspended, resume
+      : this.tasksService.SuspendProcess(processId); // Else suspend
+
+    action$.subscribe({
       next: (success) => {
         if (success) {
+          const actionText = isSuspended ? "repris" : "suspendu";
           this.toastService.success(
-            'Processus arrêté',
-            `Le processus ${processId} a été arrêté avec succès.`
+            `Processus ${actionText}`,
+            `Le processus ${processId} a été ${actionText}.`
           );
-          // Rafraîchir les données
           this.refreshData();
+        } else {
+          const actionText = isSuspended ? "reprise" : "suspension";
+          this.toastService.error(
+            "Erreur",
+            `Échec de la ${actionText} du processus ${processId}.`
+          );
         }
       },
       error: () => {
+        const actionText = isSuspended ? "reprendre" : "suspendre";
         this.toastService.error(
-          'Erreur',
-          `Impossible d'arrêter le processus ${processId}.`
+          "Erreur",
+          `Impossible de ${actionText} le processus ${processId}.`
         );
-      }
+      },
     });
   }
 
+  onTerminateProcess(processId: string): void {
+    //Appeler le service pour arrêter le processus (implémentation à adapter selon votre backend)
+  }
+
   onTransferTask(processData: ProcessData): void {
-    // Convertir ProcessData en Task pour le modal
     this.selectedTaskForTransfer = {
-      id: `TASK-${processData.processInstanceId}`,
+      id: processData.taskId ?? `TASK-${processData.processInstanceId}`,
       processInstanceId: processData.processInstanceId,
       processDefinitionId: processData.processDefinitionId,
       name: `Tâche pour ${processData.processDefinitionId}`,
-      description: `Tâche associée au processus ${processData.processInstanceId}`,
+      description: `Tâche liée au processus ${processData.processInstanceId}`,
       assignee: processData.processInitiator,
       created: new Date(processData.processStartTime),
       priority: 50,
-      status: 'assigned'
+      status: "assigned",
+      // ✅ Include custom fields
+      managerId: processData.managerId || null,
+      managerEmail: processData.managerEmail || null,
+      groupName: processData.groupName || null,
+      groupId: processData.groupId || null,
+    } as Task & {
+      managerEmail?: string;
+      groupName?: string;
+      groupId?: string;
     };
-    
+
     this.showTransferModal = true;
   }
 
@@ -244,14 +279,11 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   }
 
   onTaskTransferred(assignment: TaskAssignment): void {
-    const assigneeName = assignment.assigneeId || assignment.assigneeType;
-    
+    const assignee = assignment.assigneeId || assignment.assigneeType;
     this.toastService.success(
-      'Tâche transférée',
-      `La tâche ${assignment.taskId} a été transférée manuellement à ${assigneeName}.`
+      "Tâche transférée",
+      `La tâche ${assignment.taskId} a été transférée à ${assignee}.`
     );
-    
-    // Rafraîchir les données
     this.refreshData();
   }
 

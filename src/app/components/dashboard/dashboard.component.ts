@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { WebSocketSubject } from 'rxjs/webSocket';
-import { ProcessStatus } from '../core/models/process.model';
+import { ProcessStatus } from '../../core/models/process.model';
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {DatePipe, NgIf} from "@angular/common";
 

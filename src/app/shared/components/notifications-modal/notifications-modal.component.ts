@@ -1,176 +1,146 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { NotificationService, ProcessNotification } from '../../../core/services/notification.service';
-import { TaskService } from '../../../core/services/task.service';
-import { TaskNotification } from '../../../core/models/task.model';
-import { combineLatest } from 'rxjs';
+import {Component, Input, Output, EventEmitter, OnInit, OnDestroy, ViewChild} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { WebSocketService } from "../../../core/services/websocket.service";
+import { AuthService } from "../../../core/services/auth.service";
+import { Subscription } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { ToastNotificationComponent } from '../toast-notification/toast-notification.component';
 
-interface CombinedNotification {
+interface Notification {
   id: string;
-  type: 'process' | 'task';
+  type: "process" | "task";
   title: string;
   description: string;
   timestamp: Date;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   status: string;
   read: boolean;
-  data: ProcessNotification | TaskNotification;
 }
 
 @Component({
-  selector: 'app-notifications-modal',
+  selector: "app-notifications-modal",
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './notifications-modal.component.html',
-  styleUrls: ['./notifications-modal.component.scss']
+  imports: [CommonModule, ToastNotificationComponent],
+  templateUrl: "./notifications-modal.component.html",
+  styleUrls: ["./notifications-modal.component.scss"],
 })
-export class NotificationsModalComponent implements OnInit {
+export class NotificationsModalComponent implements OnInit, OnDestroy {
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<void>();
+  @ViewChild(ToastNotificationComponent, { static: true }) toast!: ToastNotificationComponent;
 
-  notifications: CombinedNotification[] = [];
+  notifications: Notification[] = [];
   loading = true;
+  private notificationSub?: Subscription;
+  private userId: string;
+  private localStorageKey: string;
 
   constructor(
-    private notificationService: NotificationService,
-    private taskService: TaskService
-  ) {}
+      private websocketService: WebSocketService,
+      private authService: AuthService
+  ) {
+    this.userId = this.authService.getDecodedToken()?.sub || '';
+    this.localStorageKey = `notifications_${this.userId}`;
+  }
 
   ngOnInit(): void {
-    this.loadNotifications();
-  }
-
-  trackByNotificationId(index: number, notification: CombinedNotification): any {
-    return notification.id;
-  }
-
-  loadNotifications(): void {
-    this.loading = true;
-    
-    combineLatest([
-      this.notificationService.getNotifications(),
-      this.taskService.getNotifications()
-    ]).subscribe(([processNotifications, taskNotifications]) => {
-      const combined: CombinedNotification[] = [
-        ...processNotifications.map(notif => ({
-          id: notif.id,
-          type: 'process' as const,
-          title: notif.processName,
-          description: notif.description,
-          timestamp: notif.startTime,
-          priority: notif.priority,
-          status: notif.status,
-          read: false,
-          data: notif
-        })),
-        ...taskNotifications.map(notif => ({
-          id: notif.id,
-          type: 'task' as const,
-          title: 'Transfert de tâche',
-          description: notif.message,
-          timestamp: notif.timestamp,
-          priority: 'medium' as const,
-          status: 'transferred',
-          read: notif.read,
-          data: notif
-        }))
-      ];
-
-      // Trier par timestamp décroissant
-      this.notifications = combined.sort((a, b) => 
-        b.timestamp.getTime() - a.timestamp.getTime()
-      );
-      
+    if (!this.userId) {
+      console.error('User ID not found, cannot connect to WebSocket.');
       this.loading = false;
+      return;
+    }
+    this.loadNotificationsFromStorage();
+    this.connectToWebSocket();
+  }
+
+  private loadNotificationsFromStorage(): void {
+    const stored = localStorage.getItem(this.localStorageKey);
+    if (stored) {
+      try {
+        this.notifications = JSON.parse(stored) as Notification[];
+      } catch {
+        this.notifications = [];
+      }
+    }
+  }
+
+  private saveNotificationsToStorage(): void {
+    localStorage.setItem(this.localStorageKey, JSON.stringify(this.notifications));
+  }
+
+  private connectToWebSocket(): void {
+    this.websocketService.connect(environment.websocketUrl, this.userId).subscribe({
+      next: (connected) => {
+        if (connected) {
+          this.loading = false;
+          this.notificationSub = this.websocketService.notifications$.subscribe({
+            next: (notification) => this.handleNewNotification(notification),
+            error: (err) => console.error('Notification stream error:', err)
+          });
+        }
+      },
+      error: (err) => {
+        console.error('WebSocket connection error:', err);
+        this.loading = false;
+      }
     });
   }
 
-  onClose(): void {
-    this.closeModal.emit();
-  }
+  private handleNewNotification(notification: any): void {
+    const newNotification: Notification = {
+      id: notification.id || Date.now().toString(),
+      type: notification.type || 'task',
+      title: notification.title || 'New Notification',
+      description: notification.message || notification.description || '',
+      timestamp: new Date(notification.timestamp || Date.now()),
+      priority: notification.priority || 'medium',
+      status: notification.status || 'unread',
+      read: false
+    };
 
-  onBackdropClick(event: Event): void {
-    if (event.target === event.currentTarget) {
-      this.onClose();
-    }
-  }
+    if (!this.notifications.some(n => n.id === newNotification.id)) {
+      this.notifications.unshift(newNotification);
+      this.saveNotificationsToStorage();
+      this.playNotificationSound();
 
-  getStatusIcon(notification: CombinedNotification): string {
-    if (notification.type === 'task') {
-      return 'swap_horiz';
-    }
-    
-    switch (notification.status) {
-      case 'running': return 'play_circle';
-      case 'pending': return 'schedule';
-      case 'waiting': return 'hourglass_empty';
-      default: return 'info';
-    }
-  }
-
-  getStatusClass(notification: CombinedNotification): string {
-    if (notification.type === 'task') {
-      return 'status-transferred';
-    }
-    
-    switch (notification.status) {
-      case 'running': return 'status-running';
-      case 'pending': return 'status-pending';
-      case 'waiting': return 'status-waiting';
-      default: return 'status-default';
+      // Show toast notification
+      this.showToast(newNotification);
     }
   }
 
-  getPriorityClass(priority: string): string {
-    switch (priority) {
-      case 'high': return 'priority-high';
-      case 'medium': return 'priority-medium';
-      case 'low': return 'priority-low';
-      default: return 'priority-default';
+  private showToast(notification: Notification): void {
+    if (this.toast) {
+      this.toast.show({
+        title: notification.title,
+        message: notification.description,
+        type: 'info', // or 'success', 'warning', 'error' based on priority
+        duration: 5000 // 5 seconds
+      });
     }
   }
-
-  formatDuration(startTime: Date): string {
-    const now = new Date();
-    const diff = now.getTime() - startTime.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (hours > 0) {
-      return `Il y a ${hours}h ${minutes}min`;
-    }
-    return `Il y a ${minutes}min`;
+  private playNotificationSound(): void {
+    const audio = new Audio('assets/sounds/notification.wav');
+    audio.play().catch(e => console.warn('Sound playback failed:', e));
   }
 
-  formatEstimatedTime(estimatedTime?: Date): string {
-    if (!estimatedTime) return 'Non défini';
-    
-    const now = new Date();
-    const diff = estimatedTime.getTime() - now.getTime();
-    
-    if (diff <= 0) return 'Bientôt terminé';
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (hours > 0) {
-      return `~${hours}h ${minutes}min`;
-    }
-    return `~${minutes}min`;
-  }
-
-  markAsRead(notification: CombinedNotification): void {
-    if (notification.type === 'task') {
-      this.taskService.markNotificationAsRead(notification.id);
-    } else {
-      this.notificationService.markAsRead(notification.id);
-    }
-    
-    // Mettre à jour localement
+  markAsRead(notification: Notification): void {
     notification.read = true;
+    this.saveNotificationsToStorage();
+    // Optionally send update to backend here
   }
 
-  refreshNotifications(): void {
-    this.loadNotifications();
+  markAllAsRead(): void {
+    this.notifications.forEach(n => n.read = true);
+    this.saveNotificationsToStorage();
+  }
+
+  ngOnDestroy(): void {
+    this.notificationSub?.unsubscribe();
+    this.websocketService.disconnect();
+  }
+
+  onClose(): void {
+    this.markAllAsRead();
+    this.closeModal.emit();
   }
 }

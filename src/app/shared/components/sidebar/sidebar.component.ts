@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import {AuthService} from "../../../core/services/auth.service";
 
 @Component({
   selector: 'app-sidebar',
@@ -27,6 +28,11 @@ export class SidebarComponent {
       route: '/analysis'
     },
     {
+      label: 'Process Dynamics',
+      icon: 'dynamic_feed',
+      route: '/process-dynamics'
+    },
+    {
       label: 'Database Supervision',
       icon: 'storage',
       route: '/database'
@@ -35,10 +41,19 @@ export class SidebarComponent {
       label: 'Administration',
       icon: 'admin_panel_settings',
       route: '/admin'
+    },
+    {
+      label: 'Task Management',
+      icon: 'task',
+      route: '/task'
     }
 
  
   ];
 
-  constructor() {}
+  constructor(private authService: AuthService) {}
+
+  onLogout() {
+    this.authService.logout();
+  }
 }

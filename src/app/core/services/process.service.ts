@@ -8,6 +8,12 @@ export interface ProcessData {
   processDefinitionId: string;
   processStartTime: string;
   processInitiator: string;
+  managerId: string;
+  managerEmail: string;
+  taskId: string;
+  groupId: string;
+  groupName: string;
+  suspensionState?: number;
 }
 
 export interface ProcessResponse {
@@ -19,7 +25,10 @@ export interface ProcessResponse {
     processus: ProcessData[];
     nombre: number;
   };
-  nombreProcessusÉchoués: number;
+  ProcessusÉchoués: {
+    processus: ProcessData[];
+    nombre: number;
+  };
   processusSansTâches: {
     processus: ProcessData[];
     nombre: number;

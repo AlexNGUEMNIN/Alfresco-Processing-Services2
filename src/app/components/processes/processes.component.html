@@ -1,0 +1,167 @@
+<!-- src/app/processes/processes.component.html -->
+<br /><br /><br />
+<br /><br />
+<div class="processes-container fade-in">
+  <!-- En-tête -->
+  <div class="processes-header slide-in-down">
+    <h2>Processus APS</h2>
+  </div>
+
+  <!-- Skeleton de chargement -->
+  <div *ngIf="loading" class="skeletons">
+    <div class="skeleton-header skeleton-animate"></div>
+    <div class="skeleton-tabs skeleton-animate"></div>
+    <div class="skeleton-filter skeleton-animate"></div>
+    <div class="skeleton-table skeleton-animate"></div>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading" class="processes-content fade-in">
+    <mat-tab-group
+      (selectedTabChange)="onTabChange($event)"
+      [selectedIndex]="activeTabIndex"
+      animationDuration="300ms"
+      class="processes-tabs"
+    >
+      <mat-tab
+        *ngFor="let tab of tabs"
+        [label]="tab.label + ' (' + tab.count + ')'"
+        class="process-tab"
+      >
+        <div class="tab-content">
+          <div class="filter-section">
+            <mat-form-field appearance="outline" class="search-filter">
+              <mat-label>Filtrer {{ tab.label }}</mat-label>
+              <input
+                matInput
+                (input)="applyFilter($any($event.target).value)"
+                placeholder="Recherche par initiateur ou ID..."
+              />
+              <mat-icon matSuffix class="search-icon">search</mat-icon>
+            </mat-form-field>
+          </div>
+          <div class="table-section">
+            <div class="table-wrapper">
+              <table
+                mat-table
+                [dataSource]="dataSource"
+                matSort
+                class="process-table"
+              >
+                <!-- Instance ID -->
+                <ng-container matColumnDef="processInstanceId">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    <span class="column-header">ID Instance</span>
+                  </th>
+                  <td mat-cell *matCellDef="let process">
+                    <span class="mono">{{ process.processInstanceId }}</span>
+                  </td>
+                </ng-container>
+                <!--                  <ng-container matColumnDef="managerEmail">-->
+                <!--                      <th mat-header-cell *matHeaderCellDef mat-sort-header>-->
+                <!--                          <span class="column-header">Manager</span>-->
+                <!--                      </th>-->
+                <!--                      <td mat-cell *matCellDef="let process">-->
+                <!--                          <span class="mono">{{ process.managerEmail || 'No Manager' }}</span>-->
+                <!--                      </td>-->
+                <!--                  </ng-container>-->
+
+                <!-- Definition ID -->
+                <ng-container matColumnDef="processDefinitionId">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    <span class="column-header">Définition</span>
+                  </th>
+                  <td mat-cell *matCellDef="let process">
+                    {{ process.processDefinitionId }}
+                  </td>
+                </ng-container>
+
+                <!-- Start Time -->
+                <ng-container matColumnDef="processStartTime">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    <span class="column-header">Début</span>
+                  </th>
+                  <td mat-cell *matCellDef="let process">
+                    {{ formatDate(process.processStartTime) }}
+                  </td>
+                </ng-container>
+                <!-- Initiator -->
+                <ng-container matColumnDef="processInitiator">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    <span class="column-header">Initiateur</span>
+                  </th>
+                  <td mat-cell *matCellDef="let process">
+                    <span class="initiator">{{
+                      process.processInitiator
+                    }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>
+                    <span class="column-header">Actions</span>
+                  </th>
+                  <td mat-cell *matCellDef="let process">
+                    <app-task-actions
+                      [processData]="process"
+                      (stopProcess)="
+                        onToggleProcessSuspension(
+                          $event.processInstanceId,
+                          $event.isSuspended
+                        )
+                      "
+                      (transferTask)="onTransferTask($event)"
+                      (terminateProcess)="
+                        onTerminateProcess($event.processInstanceId)
+                      "
+                    >
+                    </app-task-actions>
+                  </td>
+                </ng-container>
+                <tr
+                  mat-header-row
+                  *matHeaderRowDef="displayedColumns"
+                  class="table-header-row"
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: displayedColumns"
+                  class="table-data-row"
+                ></tr>
+              </table>
+            </div>
+            <mat-paginator
+              [pageSizeOptions]="[5, 10, 25]"
+              showFirstLastButtons
+              class="table-paginator"
+            ></mat-paginator>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+
+<!-- Modal de transfert de tâche -->
+<app-task-transfer-modal
+  [isOpen]="showTransferModal"
+  [taskData]="selectedTaskForTransfer"
+  (closeModal)="onCloseTransferModal()"
+  (taskTransferred)="onTaskTransferred($event)"
+>
+</app-task-transfer-modal>
+
+<!-- Toast notifications -->
+<div class="toast-notifications">
+  <app-toast-notification
+    *ngFor="let toast of toasts"
+    [title]="toast.title"
+    [message]="toast.message"
+    [type]="toast.type"
+    [duration]="toast.duration || 0"
+    [isVisible]="true"
+    (closed)="removeToast(toast.id)"
+  >
+  </app-toast-notification>
+</div>
