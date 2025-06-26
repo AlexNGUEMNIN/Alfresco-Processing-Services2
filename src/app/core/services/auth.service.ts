@@ -14,6 +14,9 @@ interface TokenResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+isAuthenticated(): any {
+throw new Error('Method not implemented.');
+}
   private tokenExpiryTimer?: any;
   private currentUserSubject = new BehaviorSubject<TokenResponse | null>(null);
   public currentUser = this.currentUserSubject.asObservable();
