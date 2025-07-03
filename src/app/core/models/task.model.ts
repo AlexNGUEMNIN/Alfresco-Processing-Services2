@@ -12,6 +12,11 @@ export interface Task {
   status: 'pending' | 'assigned' | 'overdue' | 'completed';
   formKey?: string;
   variables?: { [key: string]: any };
+  // ✅ Add these optional fields:
+  managerId?: string | null;
+  managerEmail?: string | null;
+  groupId?: string | null;
+  groupName?: string | null;
 }
 
 export interface TaskFilter {

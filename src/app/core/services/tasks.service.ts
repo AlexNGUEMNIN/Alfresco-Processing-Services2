@@ -87,4 +87,32 @@ export class TasksService {
         })
     );
   }
+
+  TerminateProcess(processId: string): Observable<boolean> {
+    const authHeader = this.authService.getBasicAuthHeader();
+
+    if (!authHeader) {
+      console.error('❌ Identifiants manquants dans le localStorage.');
+      return of(false);
+    }
+
+    const url = `http://localhost:8080/activiti-app/api/enterprise/process-instances/${processId}`;
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    });
+
+    return this.http.delete(url, {
+      headers,
+      observe: 'response'
+    }).pipe(
+        map(response => response.status === 200),
+        catchError(error => {
+          console.error('❌ Erreur lors de la terminaison du processus :', error);
+          return of(false);
+        })
+    );
+  }
+
 }

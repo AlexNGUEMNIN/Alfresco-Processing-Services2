@@ -97,14 +97,14 @@ export class ProcessDynamicsComponent implements OnInit {
   appSearchTerm = '';
 
   durationOptions: DurationOption[] = [
-    { label: '24h', value: '24h', description: 'Dernières 24 heures' },
-    { label: '3 jours', value: '3d', description: 'Derniers 3 jours' },
-    { label: '1 semaine', value: '1w', description: 'Dernière semaine' },
-    { label: '1 mois', value: '1m', description: 'Dernier mois' },
-    { label: '3 mois', value: '3m', description: 'Derniers 3 mois' },
-    { label: '6 mois', value: '6m', description: 'Derniers 6 mois' },
-    { label: '1 an', value: '1y', description: 'Dernière année' },
-    { label: '2 ans', value: '2y', description: 'Dernières 2 années' }
+    { label: '24h', value: '24h', description: ' ' },
+    { label: '3 jours', value: '3d', description: '' },
+    { label: '1 semaine', value: '1w', description: '' },
+    { label: '1 mois', value: '1m', description: ' ' },
+    { label: '3 mois', value: '3m', description: '' },
+    { label: '6 mois', value: '6m', description: '' },
+    { label: '1 an', value: '1y', description: ' ' },
+    { label: '2 ans', value: '2y', description: '' }
   ];
 
   selectedDuration = '1w';
