@@ -1,1 +1,801 @@
-<p>task-users works!</p>
+<div class="task-users-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="material-icons">assignment_ind</span>
+      Monitoring des Tâches Utilisateur
+    </h1>
+    <div class="header-stats">
+      <div class="stat-item">
+        <span class="stat-value">{{ totalUsers }}</span>
+        <span class="stat-label">Utilisateurs</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ totalTasks }}</span>
+        <span class="stat-label">Tâches Actives</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ totalApplications }}</span>
+        <span class="stat-label">Applications</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 Columns Layout -->
+  <div class="monitoring-columns">
+    <!-- COLONNE 1 - Gestion des Utilisateurs -->
+    <div class="column users-column">
+      <div class="column-header">
+        <h3 class="column-title">
+          <span class="material-icons">people</span>
+          Utilisateurs
+          <span class="count-badge">{{ filteredUsers.length }}</span>
+        </h3>
+        
+        <!-- Barre de recherche intelligente -->
+        <div class="search-container">
+          <div class="search-box">
+            <span class="material-icons search-icon">search</span>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Rechercher un utilisateur..."
+              [(ngModel)]="userSearchTerm"
+              (input)="onUserSearch()"
+              [class.has-value]="userSearchTerm"
+            />
+            <button 
+              *ngIf="userSearchTerm" 
+              class="clear-search"
+              (click)="clearUserSearch()"
+            >
+              <span class="material-icons">clear</span>
+            </button>
+          </div>
+          
+          <!-- Historique des recherches -->
+          <div class="search-history" *ngIf="showUserSearchHistory && userSearchHistory.length > 0">
+            <div class="history-header">Recherches récentes</div>
+            <div 
+              class="history-item"
+              *ngFor="let term of userSearchHistory"
+              (click)="selectSearchHistory(term)"
+            >
+              <span class="material-icons">history</span>
+              {{ term }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtres et tri -->
+        <div class="filters-container">
+          <div class="filter-group">
+            <label class="filter-label">Statut</label>
+            <select class="filter-select" [(ngModel)]="userStatusFilter" (change)="applyUserFilters()">
+              <option value="">Tous</option>
+              <option value="active">Actif</option>
+              <option value="inactive">Inactif</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">Tâches</label>
+            <select class="filter-select" [(ngModel)]="userTasksFilter" (change)="applyUserFilters()">
+              <option value="">Toutes</option>
+              <option value="0">0 tâche</option>
+              <option value="1-5">1-5 tâches</option>
+              <option value="6-10">6-10 tâches</option>
+              <option value="10+">10+ tâches</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">Tri</label>
+            <select class="filter-select" [(ngModel)]="userSortBy" (change)="sortUsers()">
+              <option value="name-asc">Nom (A-Z)</option>
+              <option value="name-desc">Nom (Z-A)</option>
+              <option value="tasks-desc">Plus de tâches</option>
+              <option value="tasks-asc">Moins de tâches</option>
+              <option value="activity-desc">Activité récente</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="column-content">
+        <div class="users-list" *ngIf="!loadingUsers">
+          <div 
+            class="user-card"
+            *ngFor="let user of filteredUsers; trackBy: trackByUserId"
+            [class.selected]="selectedUser?.id === user.id"
+            (click)="selectUser(user)"
+          >
+            <div class="user-avatar">
+              <img 
+                *ngIf="user.avatar" 
+                [src]="user.avatar" 
+                [alt]="user.firstName + ' ' + user.lastName"
+                class="avatar-img"
+              />
+              <div *ngIf="!user.avatar" class="avatar-placeholder">
+                {{ getInitials(user.firstName, user.lastName) }}
+              </div>
+              <div class="status-indicator" [class.active]="user.isActive"></div>
+            </div>
+            
+            <div class="user-info">
+              <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+              <div class="user-email">{{ user.email }}</div>
+              <div class="user-meta">
+                <span class="user-status" [class.active]="user.isActive">
+                  {{ user.isActive ? 'Actif' : 'Inactif' }}
+                </span>
+                <span class="user-tasks-count">
+                  <span class="material-icons">assignment</span>
+                  {{ user.tasksCount || 0 }} tâches
+                </span>
+              </div>
+              <div class="user-last-activity" *ngIf="user.lastActivity">
+                Dernière activité: {{ formatDate(user.lastActivity) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div class="loading-container" *ngIf="loadingUsers">
+          <div class="loading-spinner"></div>
+          <p>Chargement des utilisateurs...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!loadingUsers && filteredUsers.length === 0">
+          <span class="material-icons">person_off</span>
+          <h4>Aucun utilisateur trouvé</h4>
+          <p>Essayez de modifier vos critères de recherche</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLONNE 2 - Tâches de l'Utilisateur Sélectionné -->
+    <div class="column tasks-column" [class.disabled]="!selectedUser">
+      <div class="column-header">
+        <h3 class="column-title">
+          <span class="material-icons">assignment</span>
+          <span *ngIf="selectedUser">Tâches de {{ selectedUser.firstName }} {{ selectedUser.lastName }}</span>
+          <span *ngIf="!selectedUser">Sélectionnez un utilisateur</span>
+          <span class="count-badge" *ngIf="selectedUser">{{ filteredUserTasks.length }}</span>
+        </h3>
+
+        <div class="search-container" *ngIf="selectedUser">
+          <div class="search-box">
+            <span class="material-icons search-icon">search</span>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Rechercher une tâche..."
+              [(ngModel)]="taskSearchTerm"
+              (input)="onTaskSearch()"
+            />
+          </div>
+        </div>
+
+        <!-- Filtres avancés -->
+        <div class="filters-container" *ngIf="selectedUser">
+          <div class="filter-row">
+            <div class="filter-group">
+              <select class="filter-select" [(ngModel)]="taskStatusFilter" (change)="applyTaskFilters()">
+                <option value="">Tous statuts</option>
+                <option value="in-progress">En cours</option>
+                <option value="suspended">Suspendu</option>
+                <option value="pending">En attente</option>
+                <option value="completed">Terminé</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <select class="filter-select" [(ngModel)]="taskPriorityFilter" (change)="applyTaskFilters()">
+                <option value="">Toutes priorités</option>
+                <option value="high">Haute</option>
+                <option value="medium">Moyenne</option>
+                <option value="low">Basse</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <select class="filter-select" [(ngModel)]="taskSortBy" (change)="sortTasks()">
+                <option value="created-desc">Plus récentes</option>
+                <option value="created-asc">Plus anciennes</option>
+                <option value="priority-desc">Priorité haute</option>
+                <option value="name-asc">Nom (A-Z)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sélection multiple et actions -->
+        <div class="bulk-actions-header" *ngIf="selectedUser && selectedUserTasks.length > 0">
+          <div class="selection-controls">
+            <label class="checkbox-container">
+              <input 
+                type="checkbox" 
+                [checked]="isAllUserTasksSelected()"
+                [indeterminate]="isSomeUserTasksSelected()"
+                (change)="toggleAllUserTasks()"
+              />
+              <span class="checkmark"></span>
+              <span class="checkbox-label">
+                {{ selectedUserTasksIds.size > 0 ? selectedUserTasksIds.size + ' sélectionnées' : 'Tout sélectionner' }}
+              </span>
+            </label>
+          </div>
+          
+          <button 
+            class="bulk-actions-btn"
+            *ngIf="selectedUserTasksIds.size > 0"
+            (click)="openBulkActionsModal('user-tasks')"
+          >
+            <span class="material-icons">playlist_add_check</span>
+            Actions ({{ selectedUserTasksIds.size }})
+          </button>
+        </div>
+      </div>
+
+      <div class="column-content">
+        <div class="tasks-list" *ngIf="selectedUser && !loadingUserTasks">
+          <div 
+            class="task-card"
+            *ngFor="let task of filteredUserTasks; trackBy: trackByTaskId"
+            [class.selected]="selectedUserTasksIds.has(task.id)"
+          >
+            <div class="task-checkbox">
+              <label class="checkbox-container">
+                <input 
+                  type="checkbox" 
+                  [checked]="selectedUserTasksIds.has(task.id)"
+                  (change)="toggleUserTaskSelection(task.id)"
+                />
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            
+            <div class="task-content" (click)="selectTask(task)">
+              <div class="task-header">
+                <div class="task-icon">
+                  <span class="material-icons">{{ getTaskIcon(task.type) }}</span>
+                </div>
+                <div class="task-title">{{ task.name }}</div>
+                <div class="task-priority" [class]="'priority-' + task.priority">
+                  <span class="priority-dot"></span>
+                  {{ getPriorityLabel(task.priority) }}
+                </div>
+              </div>
+              
+              <div class="task-meta">
+                <div class="meta-row">
+                  <span class="meta-label">Workflow:</span>
+                  <span class="meta-value">{{ task.workflowName }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Application:</span>
+                  <span class="meta-value">{{ task.applicationName }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Créé:</span>
+                  <span class="meta-value">{{ formatDate(task.created) }}</span>
+                </div>
+                <div class="meta-row" *ngIf="task.dueDate">
+                  <span class="meta-label">Échéance:</span>
+                  <span class="meta-value" [class.overdue]="isOverdue(task.dueDate)">
+                    {{ formatDate(task.dueDate) }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="task-status">
+                <span class="status-badge" [class]="'status-' + task.status">
+                  {{ getStatusLabel(task.status) }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="task-actions">
+              <button 
+                class="action-btn"
+                [class.primary]="task.status === 'suspended'"
+                (click)="toggleTaskStatus(task)"
+                [title]="task.status === 'suspended' ? 'Reprendre' : 'Suspendre'"
+              >
+                <span class="material-icons">
+                  {{ task.status === 'suspended' ? 'play_arrow' : 'pause' }}
+                </span>
+              </button>
+              
+              <button 
+                class="action-btn danger"
+                (click)="stopTask(task)"
+                title="Arrêter"
+              >
+                <span class="material-icons">stop</span>
+              </button>
+              
+              <button 
+                class="action-btn"
+                (click)="transferTask(task)"
+                title="Transférer"
+              >
+                <span class="material-icons">swap_horiz</span>
+              </button>
+              
+              <button 
+                class="action-btn"
+                (click)="viewTaskDetails(task)"
+                title="Détails"
+              >
+                <span class="material-icons">visibility</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div class="loading-container" *ngIf="selectedUser && loadingUserTasks">
+          <div class="loading-spinner"></div>
+          <p>Chargement des tâches...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!selectedUser">
+          <span class="material-icons">assignment_late</span>
+          <h4>Sélectionnez un utilisateur</h4>
+          <p>Choisissez un utilisateur dans la colonne de gauche pour voir ses tâches</p>
+        </div>
+
+        <div class="empty-state" *ngIf="selectedUser && !loadingUserTasks && filteredUserTasks.length === 0">
+          <span class="material-icons">assignment_turned_in</span>
+          <h4>Aucune tâche trouvée</h4>
+          <p>Cet utilisateur n'a pas de tâches correspondant aux critères</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLONNE 3 - Applications de l'Utilisateur -->
+    <div class="column applications-column" [class.disabled]="!selectedUser">
+      <div class="column-header">
+        <h3 class="column-title">
+          <span class="material-icons">apps</span>
+          <span *ngIf="selectedUser">Applications de {{ selectedUser.firstName }}</span>
+          <span *ngIf="!selectedUser">Applications</span>
+          <span class="count-badge" *ngIf="selectedUser">{{ filteredUserApplications.length }}</span>
+        </h3>
+
+        <div class="search-container" *ngIf="selectedUser">
+          <div class="search-box">
+            <span class="material-icons search-icon">search</span>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Rechercher une application..."
+              [(ngModel)]="appSearchTerm"
+              (input)="onAppSearch()"
+            />
+          </div>
+        </div>
+
+        <!-- Filtres applications -->
+        <div class="filters-container" *ngIf="selectedUser">
+          <div class="filter-group">
+            <select class="filter-select" [(ngModel)]="appStatusFilter" (change)="applyAppFilters()">
+              <option value="">Tous statuts</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <select class="filter-select" [(ngModel)]="appTasksFilter" (change)="applyAppFilters()">
+              <option value="">Toutes tâches</option>
+              <option value="0">0 tâche</option>
+              <option value="1-5">1-5 tâches</option>
+              <option value="6-10">6-10 tâches</option>
+              <option value="10+">10+ tâches</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="column-content">
+        <div class="applications-list" *ngIf="selectedUser && !loadingUserApplications">
+          <div 
+            class="application-card"
+            *ngFor="let app of filteredUserApplications; trackBy: trackByAppId"
+            [class.selected]="selectedApplication?.id === app.id"
+            (click)="selectApplication(app)"
+          >
+            <div class="app-icon">
+              <img 
+                *ngIf="app.icon" 
+                [src]="app.icon" 
+                [alt]="app.name"
+                class="app-icon-img"
+              />
+              <span *ngIf="!app.icon" class="material-icons app-icon-default">
+                {{ getAppIcon(app.type) }}
+              </span>
+            </div>
+            
+            <div class="app-info">
+              <div class="app-name">{{ app.name }}</div>
+              <div class="app-meta">
+                <div class="meta-item">
+                  <span class="material-icons">settings</span>
+                  <span>{{ app.processCount || 0 }} processus</span>
+                </div>
+                <div class="meta-item">
+                  <span class="material-icons">assignment</span>
+                  <span>{{ app.taskCount || 0 }} tâches</span>
+                </div>
+              </div>
+              <div class="app-status">
+                <span class="status-badge" [class]="'status-' + app.status">
+                  {{ getAppStatusLabel(app.status) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div class="loading-container" *ngIf="selectedUser && loadingUserApplications">
+          <div class="loading-spinner"></div>
+          <p>Chargement des applications...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!selectedUser">
+          <span class="material-icons">apps</span>
+          <h4>Sélectionnez un utilisateur</h4>
+          <p>Choisissez un utilisateur pour voir ses applications</p>
+        </div>
+
+        <div class="empty-state" *ngIf="selectedUser && !loadingUserApplications && filteredUserApplications.length === 0">
+          <span class="material-icons">apps</span>
+          <h4>Aucune application trouvée</h4>
+          <p>Cet utilisateur n'a pas d'applications correspondant aux critères</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLONNE 4 - Tâches de l'Application Sélectionnée -->
+    <div class="column app-tasks-column" [class.disabled]="!selectedApplication">
+      <div class="column-header">
+        <h3 class="column-title">
+          <span class="material-icons">assignment_turned_in</span>
+          <span *ngIf="selectedApplication">Tâches de {{ selectedApplication.name }}</span>
+          <span *ngIf="!selectedApplication">Tâches d'application</span>
+          <span class="count-badge" *ngIf="selectedApplication">{{ filteredAppTasks.length }}</span>
+        </h3>
+
+        <div class="search-container" *ngIf="selectedApplication">
+          <div class="search-box">
+            <span class="material-icons search-icon">search</span>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Rechercher une tâche dans l'application..."
+              [(ngModel)]="appTaskSearchTerm"
+              (input)="onAppTaskSearch()"
+            />
+          </div>
+        </div>
+
+        <!-- Filtres spécialisés -->
+        <div class="filters-container" *ngIf="selectedApplication">
+          <div class="filter-row">
+            <div class="filter-group">
+              <select class="filter-select" [(ngModel)]="appTaskProcessFilter" (change)="applyAppTaskFilters()">
+                <option value="">Tous processus</option>
+                <option *ngFor="let process of availableProcesses" [value]="process.id">
+                  {{ process.name }}
+                </option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <select class="filter-select" [(ngModel)]="appTaskAssigneeFilter" (change)="applyAppTaskFilters()">
+                <option value="">Tous assignés</option>
+                <option *ngFor="let assignee of availableAssignees" [value]="assignee.id">
+                  {{ assignee.name }}
+                </option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <select class="filter-select" [(ngModel)]="appTaskStatusFilter" (change)="applyAppTaskFilters()">
+                <option value="">Tous statuts</option>
+                <option value="in-progress">En cours</option>
+                <option value="suspended">Suspendu</option>
+                <option value="pending">En attente</option>
+                <option value="overdue">En retard</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sélection multiple et actions -->
+        <div class="bulk-actions-header" *ngIf="selectedApplication && selectedAppTasks.length > 0">
+          <div class="selection-controls">
+            <label class="checkbox-container">
+              <input 
+                type="checkbox" 
+                [checked]="isAllAppTasksSelected()"
+                [indeterminate]="isSomeAppTasksSelected()"
+                (change)="toggleAllAppTasks()"
+              />
+              <span class="checkmark"></span>
+              <span class="checkbox-label">
+                {{ selectedAppTasksIds.size > 0 ? selectedAppTasksIds.size + ' sélectionnées' : 'Tout sélectionner' }}
+              </span>
+            </label>
+          </div>
+          
+          <button 
+            class="bulk-actions-btn"
+            *ngIf="selectedAppTasksIds.size > 0"
+            (click)="openBulkActionsModal('app-tasks')"
+          >
+            <span class="material-icons">playlist_add_check</span>
+            Actions ({{ selectedAppTasksIds.size }})
+          </button>
+        </div>
+      </div>
+
+      <div class="column-content">
+        <div class="tasks-list" *ngIf="selectedApplication && !loadingAppTasks">
+          <div 
+            class="task-card detailed"
+            *ngFor="let task of filteredAppTasks; trackBy: trackByTaskId"
+            [class.selected]="selectedAppTasksIds.has(task.id)"
+          >
+            <div class="task-checkbox">
+              <label class="checkbox-container">
+                <input 
+                  type="checkbox" 
+                  [checked]="selectedAppTasksIds.has(task.id)"
+                  (change)="toggleAppTaskSelection(task.id)"
+                />
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            
+            <div class="task-content" (click)="selectTask(task)">
+              <div class="task-header">
+                <div class="task-icon">
+                  <span class="material-icons">{{ getTaskIcon(task.type) }}</span>
+                </div>
+                <div class="task-title">{{ task.name }}</div>
+                <div class="task-priority" [class]="'priority-' + task.priority">
+                  <span class="priority-dot"></span>
+                  {{ getPriorityLabel(task.priority) }}
+                </div>
+              </div>
+              
+              <div class="task-meta detailed">
+                <div class="meta-row">
+                  <span class="meta-label">Processus:</span>
+                  <span class="meta-value">{{ task.processName }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Workflow:</span>
+                  <span class="meta-value">{{ task.workflowName }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Assigné à:</span>
+                  <span class="meta-value">{{ task.assigneeName || 'Non assigné' }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Créé:</span>
+                  <span class="meta-value">{{ formatDate(task.created) }}</span>
+                </div>
+                <div class="meta-row" *ngIf="task.dueDate">
+                  <span class="meta-label">Échéance:</span>
+                  <span class="meta-value" [class.overdue]="isOverdue(task.dueDate)">
+                    {{ formatDate(task.dueDate) }}
+                    <span *ngIf="isOverdue(task.dueDate)" class="overdue-badge">En retard</span>
+                  </span>
+                </div>
+              </div>
+              
+              <div class="task-status">
+                <span class="status-badge" [class]="'status-' + task.status">
+                  {{ getStatusLabel(task.status) }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="task-actions">
+              <button 
+                class="action-btn"
+                [class.primary]="task.status === 'suspended'"
+                (click)="toggleTaskStatus(task)"
+                [title]="task.status === 'suspended' ? 'Reprendre' : 'Suspendre'"
+              >
+                <span class="material-icons">
+                  {{ task.status === 'suspended' ? 'play_arrow' : 'pause' }}
+                </span>
+              </button>
+              
+              <button 
+                class="action-btn danger"
+                (click)="stopTask(task)"
+                title="Arrêter"
+              >
+                <span class="material-icons">stop</span>
+              </button>
+              
+              <button 
+                class="action-btn"
+                (click)="transferTask(task)"
+                title="Transférer"
+              >
+                <span class="material-icons">swap_horiz</span>
+              </button>
+              
+              <button 
+                class="action-btn"
+                (click)="viewTaskDetails(task)"
+                title="Détails"
+              >
+                <span class="material-icons">visibility</span>
+              </button>
+              
+              <button 
+                class="action-btn"
+                (click)="viewTaskHistory(task)"
+                title="Historique"
+              >
+                <span class="material-icons">history</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div class="loading-container" *ngIf="selectedApplication && loadingAppTasks">
+          <div class="loading-spinner"></div>
+          <p>Chargement des tâches...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!selectedApplication">
+          <span class="material-icons">assignment_turned_in</span>
+          <h4>Sélectionnez une application</h4>
+          <p>Choisissez une application pour voir ses tâches</p>
+        </div>
+
+        <div class="empty-state" *ngIf="selectedApplication && !loadingAppTasks && filteredAppTasks.length === 0">
+          <span class="material-icons">assignment_turned_in</span>
+          <h4>Aucune tâche trouvée</h4>
+          <p>Cette application n'a pas de tâches correspondant aux critères</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-navigation">
+    <button 
+      class="nav-btn"
+      [class.active]="activeColumn === 'users'"
+      (click)="setActiveColumn('users')"
+    >
+      <span class="material-icons">people</span>
+      <span>Utilisateurs</span>
+    </button>
+    <button 
+      class="nav-btn"
+      [class.active]="activeColumn === 'tasks'"
+      (click)="setActiveColumn('tasks')"
+      [disabled]="!selectedUser"
+    >
+      <span class="material-icons">assignment</span>
+      <span>Tâches</span>
+    </button>
+    <button 
+      class="nav-btn"
+      [class.active]="activeColumn === 'apps'"
+      (click)="setActiveColumn('apps')"
+      [disabled]="!selectedUser"
+    >
+      <span class="material-icons">apps</span>
+      <span>Apps</span>
+    </button>
+    <button 
+      class="nav-btn"
+      [class.active]="activeColumn === 'app-tasks'"
+      (click)="setActiveColumn('app-tasks')"
+      [disabled]="!selectedApplication"
+    >
+      <span class="material-icons">assignment_turned_in</span>
+      <span>Tâches App</span>
+    </button>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<app-enhanced-bulk-actions-modal
+  *ngIf="showBulkActionsModal"
+  [isOpen]="showBulkActionsModal"
+  [selectedItems]="getSelectedItems()"
+  [context]="bulkActionContext"
+  [availableActions]="getAvailableActions()"
+  (closeModal)="closeBulkActionsModal()"
+  (actionExecuted)="onBulkActionExecuted($event)"
+>
+</app-enhanced-bulk-actions-modal>
+
+<!-- Task Transfer Modal -->
+<app-task-transfer-modal
+  *ngIf="showTransferModal"
+  [isOpen]="showTransferModal"
+  [taskData]="taskToTransfer"
+  (closeModal)="closeTransferModal()"
+  (taskTransferred)="onTaskTransferred($event)"
+>
+</app-task-transfer-modal>
+
+<!-- Task Details Modal -->
+<div class="modal-overlay" *ngIf="showTaskDetailsModal" (click)="closeTaskDetailsModal()">
+  <div class="task-details-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Détails de la tâche</h3>
+      <button class="close-btn" (click)="closeTaskDetailsModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="modal-content" *ngIf="selectedTaskDetails">
+      <!-- Task details content here -->
+      <div class="detail-section">
+        <h4>Informations générales</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Nom:</label>
+            <span>{{ selectedTaskDetails.name }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Statut:</label>
+            <span class="status-badge" [class]="'status-' + selectedTaskDetails.status">
+              {{ getStatusLabel(selectedTaskDetails.status) }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <label>Priorité:</label>
+            <span class="priority-badge" [class]="'priority-' + selectedTaskDetails.priority">
+              {{ getPriorityLabel(selectedTaskDetails.priority) }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <label>Créé le:</label>
+            <span>{{ formatDate(selectedTaskDetails.created) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container">
+  <div 
+    class="toast"
+    *ngFor="let toast of toasts"
+    [class]="'toast-' + toast.type"
+  >
+    <span class="material-icons">{{ getToastIcon(toast.type) }}</span>
+    <span class="toast-message">{{ toast.message }}</span>
+    <button class="toast-close" (click)="removeToast(toast.id)">
+      <span class="material-icons">close</span>
+    </button>
+  </div>
+</div>
