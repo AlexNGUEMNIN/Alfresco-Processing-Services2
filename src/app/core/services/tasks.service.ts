@@ -13,7 +13,14 @@ export class TasksService {
   constructor(private http: HttpClient,private authService: AuthService) { }
 
   getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl).pipe(
+    const token = this.authService.accessToken;
+    if (!token) return throwError(() => new Error('No access token found'));
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    return this.http.get<User[]>(this.apiUrl, { headers }).pipe(
         catchError(this.handleError)
     );
   }
@@ -49,7 +56,7 @@ export class TasksService {
       return of(false);
     }
 
-    const url = `http://localhost:8080/activiti-app/api/enterprise/process-instances/${processId}/suspend`;
+    const url = `http://192.168.43.231:8080/activiti-app/api/enterprise/process-instances/${processId}/suspend`;
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -72,7 +79,7 @@ export class TasksService {
       return of(false);
     }
 
-    const url = `http://localhost:8080/activiti-app/api/enterprise/process-instances/${processId}/activate`;
+    const url = `http://192.168.43.231:8080/activiti-app/api/enterprise/process-instances/${processId}/activate`;
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -96,7 +103,7 @@ export class TasksService {
       return of(false);
     }
 
-    const url = `http://localhost:8080/activiti-app/api/enterprise/process-instances/${processId}`;
+    const url = `http://192.168.43.231:8080/activiti-app/api/enterprise/process-instances/${processId}`;
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',

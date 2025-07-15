@@ -2,7 +2,7 @@
   <button
     class="action-btn stop-btn"
     [ngClass]="{ suspended: isSuspended }"
-    (click)="onStopProcess()"
+    (click)="confirmSuspendProcess()"
     [disabled]="loading"
     [title]="isSuspended ? 'Reprendre le processus' : 'Suspendre le processus'"
   >
@@ -26,10 +26,24 @@
 
   <button
     class="action-btn terminate-btn"
-    (click)="onTerminateProcess()"
+    (click)="confirmTerminateProcess()"
     title="Arrêter le processus"
   >
     <span class="material-icons">stop_circle</span>
     <span class="btn-text">Arrêter</span>
   </button>
 </div>
+
+<!-- Affichage du popup même pour les opérations groupées -->
+<app-confirm-dialog
+  *ngIf="showConfirmDialog"
+  [title]="confirmDialogConfig.title"
+  [message]="confirmDialogConfig.message"
+  [confirmText]="confirmDialogConfig.confirmText"
+  [cancelText]="confirmDialogConfig.cancelText"
+  [icon]="confirmDialogConfig.icon"
+  [iconColor]="confirmDialogConfig.iconColor"
+  [theme]="confirmDialogConfig.theme"
+  (confirmed)="onConfirmDialogResult($event)"
+>
+</app-confirm-dialog>

@@ -235,7 +235,7 @@ export class ProcessDynamicsComponent implements OnInit {
   }
 
   selectDuration(duration: string): void {
-    this.selectedDuration = duration;
+     this.selectedDuration = duration;
   }
 
   toggleProcessType(type: string): void {

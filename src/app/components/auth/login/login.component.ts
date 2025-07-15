@@ -29,8 +29,9 @@ export class LoginComponent {
         this.emailM = '';
         this.passwordM = '';
 
-        if (!this.email.includes('@')) {
-            this.emailM = 'Adresse email invalide';
+        // Validate only that the field is not empty
+        if (!this.email || this.email.trim().length < 3) {
+            this.emailM = 'Nom d’utilisateur ou email invalide';
         }
 
         if (this.password.length < 3) {
@@ -43,11 +44,12 @@ export class LoginComponent {
 
         this.authService.login(this.email, this.password).subscribe({
             next: () => {
-                this.router.navigate(['/dashboard']); // or your target route
+                this.router.navigate(['/dashboard']);
             },
-            error: (err) => {
+            error: () => {
                 this.errorMessage = 'Échec de connexion. Vérifiez vos identifiants.';
             },
         });
     }
+
 }

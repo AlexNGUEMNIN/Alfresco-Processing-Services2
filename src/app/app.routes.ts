@@ -94,6 +94,13 @@ export const routes: Routes = [
             (m) => m.TaskComponent
           ),
       },
+       {
+        path: "task-users",
+        loadComponent: () =>
+          import("./components/task-users/task-users.component").then(
+            (m) => m.TaskUsersComponent
+          ),
+      },
       {
         path: "",
         redirectTo: "dashboard",

@@ -6,7 +6,7 @@ import { MatTabChangeEvent } from "@angular/material/tabs";
 import { DatePipe, CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Subscription } from "rxjs";
-import { SelectionModel } from '@angular/cdk/collections';
+import { SelectionModel } from "@angular/cdk/collections";
 
 import {
   ProcessData,
@@ -34,7 +34,9 @@ import { MatMenuModule } from "@angular/material/menu";
 import { TaskActionsComponent } from "../../shared/components/task-actions/task-actions.component";
 import { TaskTransferModalComponent } from "../../shared/components/task-transfer-modal/task-transfer-modal.component";
 import { ToastNotificationComponent } from "../../shared/components/toast-notification/toast-notification.component";
+import { ConfirmDialogComponent } from "../../shared/components/confirm-dialog/confirm-dialog.component";
 import { TasksService } from "../../core/services/tasks.service";
+import { BulkActionsModalComponent } from "../../shared/components/bulk-actions-modal/bulk-actions-modal.component";
 
 @Component({
   selector: "app-processes",
@@ -56,6 +58,8 @@ import { TasksService } from "../../core/services/tasks.service";
     TaskActionsComponent,
     TaskTransferModalComponent,
     ToastNotificationComponent,
+    ConfirmDialogComponent,
+    BulkActionsModalComponent,
   ],
   templateUrl: "./processes.component.html",
   styleUrls: ["./processes.component.scss"],
@@ -65,14 +69,26 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   activeTabIndex = 0;
   loading = true;
   tabs = [
-    { label: "Uniquement par son initiateur", key: "processusInitiateurSeulement", count: 0 },
+    {
+      label: "Uniquement par son initiateur",
+      key: "processusInitiateurSeulement",
+      count: 0,
+    },
     { label: "Qu'une seule tâche exécutée", key: "processusLongs", count: 0 },
-    { label: "Avec erreur/exception technique", key: "processusSansTâches", count: 0 },
-    { label: "Sans aucune tâche utilisateur", key: "nombreProcessusÉchoués", count: 0 },
+    {
+      label: "Avec erreur/exception technique",
+      key: "processusSansTâches",
+      count: 0,
+    },
+    {
+      label: "Sans aucune tâche utilisateur",
+      key: "nombreProcessusÉchoués",
+      count: 0,
+    },
   ];
 
   displayedColumns = [
-    'select',
+    "select",
     "processInstanceId",
     "processDefinitionId",
     "processStartTime",
@@ -83,16 +99,35 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   processData: ProcessResponse | null = null;
   selection = new SelectionModel<ProcessData>(true, []);
 
+  // Add this property to track selected process IDs
+  private selectedProcessIds = new Set<string>();
+
   bulkActions = [
-    { name: 'Suspend Selected', action: 'suspend', icon: 'pause_circle' },
-    { name: 'Resume Selected', action: 'resume', icon: 'play_circle' },
-    { name: 'Terminate Selected', action: 'terminate', icon: 'stop_circle' },
-    { name: 'Transfer Selected', action: 'transfer', icon: 'swap_horiz' }
+    { name: "Suspend Selected", action: "suspend", icon: "pause_circle" },
+    { name: "Resume Selected", action: "resume", icon: "play_circle" },
+    { name: "Terminate Selected", action: "terminate", icon: "stop_circle" },
+    { name: "Transfer Selected", action: "transfer", icon: "swap_horiz" },
   ];
 
   showTransferModal = false;
   selectedTaskForTransfer: Task[] = [];
   toasts: ToastMessage[] = [];
+
+  // Pour la confirmation des actions groupées
+  showBulkConfirmDialog = false;
+  bulkConfirmDialogConfig = {
+    title: "",
+    message: "",
+    confirmText: "",
+    cancelText: "Annuler",
+    icon: "",
+    iconColor: "",
+    theme: "",
+    action: "" as "suspend" | "resume" | "terminate" | "",
+    processes: [] as ProcessData[],
+  };
+
+  showBulkActionsModal = false;
 
   private socketSubscription!: Subscription;
   private toastSubscription!: Subscription;
@@ -103,11 +138,11 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
-      private webSocketService: ProcessService,
-      private taskService: TaskService,
-      private tasksService: TasksService,
-      private toastService: ToastService,
-      private datePipe: DatePipe
+    private webSocketService: ProcessService,
+    private taskService: TaskService,
+    private tasksService: TasksService,
+    private toastService: ToastService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -127,41 +162,128 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   }
 
   toggleAllRows() {
-    this.isAllSelected() ? this.selection.clear() : this.selection.select(...this.dataSource.data);
+    if (this.isAllSelected()) {
+      this.selection.clear();
+      this.selectedProcessIds.clear();
+    } else {
+      this.selection.select(...this.dataSource.data);
+      this.dataSource.data.forEach((process) => {
+        this.selectedProcessIds.add(process.processInstanceId);
+      });
+    }
+  }
+
+  // Override the selection toggle to maintain persistent tracking
+  toggleSelection(row: ProcessData) {
+    if (this.selection.isSelected(row)) {
+      this.selection.deselect(row);
+      this.selectedProcessIds.delete(row.processInstanceId);
+    } else {
+      this.selection.select(row);
+      this.selectedProcessIds.add(row.processInstanceId);
+    }
   }
 
   checkboxLabel(row?: ProcessData): string {
     return row
-        ? `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.processInstanceId}`
-        : `${this.isAllSelected() ? 'deselect' : 'select'} all`;
+      ? `${this.selection.isSelected(row) ? "deselect" : "select"} row ${
+          row.processInstanceId
+        }`
+      : `${this.isAllSelected() ? "deselect" : "select"} all`;
   }
 
   performBulkAction(action: string) {
     const selectedProcesses = this.selection.selected;
     if (!selectedProcesses.length) {
-      this.toastService.warning('No Selection', 'Please select at least one process');
+      this.toastService.warning(
+        "No Selection",
+        "Please select at least one process"
+      );
       return;
     }
 
+    // Afficher le popup de confirmation pour les actions groupées
+    let title = "";
+    let message = "";
+    let confirmText = "";
+    let icon = "";
+    let iconColor = "";
+    let theme = "";
+
     switch (action) {
-      case 'suspend':
-        selectedProcesses.forEach(p => this.onToggleProcessSuspension(p.processInstanceId, false));
+      case "suspend":
+        title = "Confirmation de suspension groupée";
+        message = `Êtes-vous sûr de vouloir suspendre ${selectedProcesses.length} processus sélectionnés ?`;
+        confirmText = "Suspendre";
+        icon = "pause_circle";
+        iconColor = "#f59e42";
+        theme = "";
         break;
-      case 'resume':
-        selectedProcesses.forEach(p => this.onToggleProcessSuspension(p.processInstanceId, true));
+      case "resume":
+        title = "Confirmation de reprise groupée";
+        message = `Êtes-vous sûr de vouloir reprendre ${selectedProcesses.length} processus sélectionnés ?`;
+        confirmText = "Reprendre";
+        icon = "play_circle";
+        iconColor = "#4caf50";
+        theme = "";
         break;
-      case 'terminate':
-        selectedProcesses.forEach(p => this.onTerminateProcess(p.processInstanceId));
+      case "terminate":
+        title = "Confirmation d'arrêt groupé";
+        message = `Êtes-vous sûr de vouloir arrêter ${selectedProcesses.length} processus sélectionnés ?`;
+        confirmText = "Arrêter";
+        icon = "stop_circle";
+        iconColor = "#ef4444";
+        theme = "danger";
         break;
-      case 'transfer':
-        this.selectedTaskForTransfer = selectedProcesses.map(this.mapProcessToTask);
+      case "transfer":
+        // Pas de confirmation pour transfert, ouvrir directement le modal
+        this.selectedTaskForTransfer = selectedProcesses.map(
+          this.mapProcessToTask
+        );
         this.showTransferModal = true;
-        break;
+        return;
     }
 
-    if (action !== 'transfer') {
-      this.selection.clear();
+    this.bulkConfirmDialogConfig = {
+      title,
+      message,
+      confirmText,
+      cancelText: "Annuler",
+      icon,
+      iconColor,
+      theme,
+      action: action as "suspend" | "resume" | "terminate",
+      processes: [...selectedProcesses],
+    };
+    this.showBulkConfirmDialog = true;
+  }
+
+  onBulkConfirmDialogResult(result: boolean) {
+    if (!result) {
+      this.showBulkConfirmDialog = false;
+      return;
     }
+    const { action, processes } = this.bulkConfirmDialogConfig;
+    if (!processes.length) return;
+
+    switch (action) {
+      case "suspend":
+        processes.forEach((p) =>
+          this.onToggleProcessSuspension(p.processInstanceId, false)
+        );
+        break;
+      case "resume":
+        processes.forEach((p) =>
+          this.onToggleProcessSuspension(p.processInstanceId, true)
+        );
+        break;
+      case "terminate":
+        processes.forEach((p) => this.onTerminateProcess(p.processInstanceId));
+        break;
+    }
+    this.selection.clear();
+    this.selectedProcessIds.clear();
+    this.showBulkConfirmDialog = false;
   }
 
   mapProcessToTask(process: ProcessData): Task {
@@ -211,7 +333,8 @@ export class ProcessesComponent implements OnInit, OnDestroy {
       this.showTransferModal = true;
 
       const subscription = this.toastService.toasts$.subscribe((toasts) => {
-        const transferSuccess = toasts.find(t =>
+        const transferSuccess = toasts.find(
+          (t) =>
             t.title?.includes("Tâche transférée") &&
             t.message?.includes(task.id)
         );
@@ -227,7 +350,7 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   }
 
   getRowClass(row: ProcessData) {
-    return { 'selected': this.selection.isSelected(row) };
+    return { selected: this.selection.isSelected(row) };
   }
 
   subscribeToToasts(): void {
@@ -237,6 +360,10 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   }
 
   connectToWebSocket(): void {
+    // Connexion persistante avec reconnexion automatique
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
     this.socketSubscription = this.webSocketService.connect().subscribe({
       next: (response: ProcessResponse) => {
         this.processData = response;
@@ -259,12 +386,14 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   refreshData(): void {
     this.loading = true;
     this.selection.clear();
+    this.selectedProcessIds.clear();
     setTimeout(() => this.connectToWebSocket(), 800);
   }
 
   updateTabCounts(): void {
     if (!this.processData) return;
-    this.tabs[0].count = this.processData.processusInitiateurSeulement?.nombre || 0;
+    this.tabs[0].count =
+      this.processData.processusInitiateurSeulement?.nombre || 0;
     this.tabs[1].count = this.processData.processusLongs?.nombre || 0;
     this.tabs[2].count = this.processData.processusSansTâches?.nombre || 0;
     this.tabs[3].count = this.processData.ProcessusÉchoués?.nombre || 0;
@@ -273,6 +402,7 @@ export class ProcessesComponent implements OnInit, OnDestroy {
   onTabChange(event: MatTabChangeEvent): void {
     this.activeTabIndex = event.index;
     this.selection.clear();
+    this.selectedProcessIds.clear();
     this.loadTabData(event.index);
   }
 
@@ -282,7 +412,8 @@ export class ProcessesComponent implements OnInit, OnDestroy {
     let processes: ProcessData[] = [];
     switch (tabIndex) {
       case 0:
-        processes = this.processData.processusInitiateurSeulement?.processus || [];
+        processes =
+          this.processData.processusInitiateurSeulement?.processus || [];
         break;
       case 1:
         processes = this.processData.processusLongs?.processus || [];
@@ -299,14 +430,29 @@ export class ProcessesComponent implements OnInit, OnDestroy {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
 
+    // Restore previous selections after data reload
+    this.restoreSelections();
+
     this.dataSource.filterPredicate = (data: ProcessData, filter: string) => {
       const f = filter.toLowerCase().trim();
       return (
-          data.processInstanceId?.toLowerCase().includes(f) ||
-          data.processDefinitionId?.toLowerCase().includes(f) ||
-          data.processInitiator?.toLowerCase().includes(f)
+        data.processInstanceId?.toLowerCase().includes(f) ||
+        data.processDefinitionId?.toLowerCase().includes(f) ||
+        data.processInitiator?.toLowerCase().includes(f)
       );
     };
+  }
+
+  // Add method to restore selections after data updates
+  private restoreSelections(): void {
+    if (this.selectedProcessIds.size === 0) return;
+
+    const processesToSelect = this.dataSource.data.filter((process) =>
+      this.selectedProcessIds.has(process.processInstanceId)
+    );
+
+    this.selection.clear();
+    this.selection.select(...processesToSelect);
   }
 
   applyFilter(value: string): void {
@@ -320,22 +466,31 @@ export class ProcessesComponent implements OnInit, OnDestroy {
 
   onToggleProcessSuspension(processId: string, isSuspended: boolean): void {
     const action$ = isSuspended
-        ? this.tasksService.ResumeProcess(processId)
-        : this.tasksService.SuspendProcess(processId);
+      ? this.tasksService.ResumeProcess(processId)
+      : this.tasksService.SuspendProcess(processId);
 
     action$.subscribe({
       next: (success) => {
         const actionText = isSuspended ? "repris" : "suspendu";
         if (success) {
-          this.toastService.success(`Processus ${actionText}`, `Le processus ${processId} a été ${actionText}.`);
+          this.toastService.success(
+            `Processus ${actionText}`,
+            `Le processus ${processId} a été ${actionText}.`
+          );
           this.refreshData();
         } else {
-          this.toastService.error("Erreur", `Échec de la ${actionText} du processus ${processId}.`);
+          this.toastService.error(
+            "Erreur",
+            `Échec de la ${actionText} du processus ${processId}.`
+          );
         }
       },
       error: () => {
         const actionText = isSuspended ? "reprendre" : "suspendre";
-        this.toastService.error("Erreur", `Impossible de ${actionText} le processus ${processId}.`);
+        this.toastService.error(
+          "Erreur",
+          `Impossible de ${actionText} le processus ${processId}.`
+        );
       },
     });
   }
@@ -344,14 +499,23 @@ export class ProcessesComponent implements OnInit, OnDestroy {
     this.tasksService.TerminateProcess(processId).subscribe({
       next: (success) => {
         if (success) {
-          this.toastService.success("Processus terminé", `Le processus ${processId} a été terminé avec succès.`);
+          this.toastService.success(
+            "Processus terminé",
+            `Le processus ${processId} a été terminé avec succès.`
+          );
           this.refreshData();
         } else {
-          this.toastService.error("Erreur", `Échec de la terminaison du processus ${processId}.`);
+          this.toastService.error(
+            "Erreur",
+            `Échec de la terminaison du processus ${processId}.`
+          );
         }
       },
       error: () => {
-        this.toastService.error("Erreur", `Impossible de terminer le processus ${processId}.`);
+        this.toastService.error(
+          "Erreur",
+          `Impossible de terminer le processus ${processId}.`
+        );
       },
     });
   }
@@ -377,7 +541,10 @@ export class ProcessesComponent implements OnInit, OnDestroy {
 
     for (const a of assignments) {
       const assignee = a.assigneeId || a.assigneeType;
-      this.toastService.success("Tâche transférée", `La tâche ${a.taskId} a été transférée à ${assignee}.`);
+      this.toastService.success(
+        "Tâche transférée",
+        `La tâche ${a.taskId} a été transférée à ${assignee}.`
+      );
     }
 
     if (this.isAutoTransfer) {

@@ -39,6 +39,7 @@ export class TaskTransferModalComponent implements OnInit, OnChanges, OnDestroy 
 
   private wsSubscription?: Subscription;
   private currentUserId: string;
+  private BASE_URL = 'http://192.168.43.231:8080';
 
   constructor(
       private taskService: TasksService,
@@ -153,7 +154,7 @@ export class TaskTransferModalComponent implements OnInit, OnChanges, OnDestroy 
       if (!basicAuthHeader) throw new Error('🔐 Informations d\'authentification introuvables.');
 
       const fetchedUserId = await this.http
-          .get<string>(`http://localhost:8082/api/users/db-id-by-email?email=${encodeURIComponent(assigneeEmail)}`, { responseType: 'text' as 'json' })
+          .get<string>(`http://localhost:8082/api/db-id-by-email?email=${encodeURIComponent(assigneeEmail)}`, { responseType: 'text' as 'json' })
           .toPromise();
 
       if (!fetchedUserId || fetchedUserId.trim() === '') {
@@ -171,7 +172,7 @@ export class TaskTransferModalComponent implements OnInit, OnChanges, OnDestroy 
           };
 
           await this.http.put(
-              `http://localhost:8080/activiti-app/api/enterprise/tasks/${assignment.taskId}/action/assign`,
+              `{this.BASE_URL}/activiti-app/api/enterprise/tasks/${assignment.taskId}/action/assign`,
               {
                 assignee: trimmedUserId,
                 email: assigneeEmail
@@ -180,10 +181,11 @@ export class TaskTransferModalComponent implements OnInit, OnChanges, OnDestroy 
                 headers: new HttpHeaders({
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': basicAuthHeader
+                  'Authorization': `Bearer ${this.authService.accessToken}`
                 })
               }
           ).toPromise();
+
 
           const payload = {
             taskId: assignment.taskId,
@@ -270,13 +272,13 @@ export class TaskTransferModalComponent implements OnInit, OnChanges, OnDestroy 
           };
 
           await this.http.put(
-              `http://localhost:8080/activiti-app/api/enterprise/tasks/${assignment.taskId}/action/assign`,
+              `{this.BASE_URL}/activiti-app/api/enterprise/tasks/${assignment.taskId}/action/assign`,
               { assignee: managerId, email: managerEmail },
               {
                 headers: new HttpHeaders({
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': basicAuthHeader
+                  'Authorization': `Bearer ${this.authService.accessToken}`
                 })
               }
           ).toPromise();
@@ -356,16 +358,17 @@ export class TaskTransferModalComponent implements OnInit, OnChanges, OnDestroy 
 
       for (const task of tasks) {
         try {
-          await this.http.post(
-              `http://localhost:8080/activiti-app/api/enterprise/tasks/${task.id}/groups/${groupId}`,
+          await this.http.put(
+              `{this.BASE_URL}/activiti-app/api/enterprise/tasks/${task.id}/action/unclaim`,
               null,
               {
                 headers: new HttpHeaders({
                   'Content-Type': 'application/json',
-                  'Authorization': basicAuthHeader
+                  'Authorization': `Bearer ${this.authService.accessToken}`
                 })
               }
           ).toPromise();
+
 
           await Promise.all(userIds.map(async (userId, index) => {
             const email = userEmails[index];

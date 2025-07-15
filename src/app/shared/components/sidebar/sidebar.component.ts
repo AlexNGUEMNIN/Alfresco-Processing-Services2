@@ -11,45 +11,48 @@ import {AuthService} from "../../../core/services/auth.service";
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent {
-  menuItems = [
-    {
-      label: 'Dashboard',
-      icon: 'dashboard',
-      route: '/dashboard'
-    },
-    {
-      label: 'Process Management',
-      icon: 'settings_suggest',
-      route: '/processes'
-    },
-    {
-      label: 'Process Analysis',
-      icon: 'analytics',
-      route: '/analysis'
-    },
-    {
-      label: 'Process Dynamics',
-      icon: 'dynamic_feed',
-      route: '/process-dynamics'
-    },
-    {
-      label: 'Database Supervision',
-      icon: 'storage',
-      route: '/database'
-    },
-    {
-      label: 'Administration',
-      icon: 'admin_panel_settings',
-      route: '/admin'
-    },
-    {
-      label: 'Task Management',
-      icon: 'task',
-      route: '/task'
-    }
-
- 
-  ];
+ menuItems = [
+  {
+    label: 'Dashboard',
+    icon: 'dashboard',
+    route: '/dashboard'
+  },
+  {
+    label: 'Process Management',
+    icon: 'settings_suggest',
+    route: '/processes'
+  },
+  {
+    label: 'Process Analysis',
+    icon: 'analytics',
+    route: '/analysis'
+  },
+  {
+    label: 'Process Dynamics',
+    icon: 'dynamic_feed',
+    route: '/process-dynamics'
+  },
+  {
+    label: 'Database Supervision',
+    icon: 'storage',
+    route: '/database'
+  },
+  {
+    label: 'Administration',
+    icon: 'admin_panel_settings',
+    route: '/admin'
+  },
+  {
+    label: 'Task Management',
+    icon: 'task',
+    route: '/task'
+  },
+  {
+    label: 'User Tasks',
+    icon: 'assignment_ind',
+    route: '/task-users'
+  }
+];
 
   constructor(private authService: AuthService) {}
 

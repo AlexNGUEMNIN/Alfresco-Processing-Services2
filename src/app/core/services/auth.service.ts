@@ -28,29 +28,23 @@ export class AuthService {
   }
 
     login(username: string, password: string): Observable<TokenResponse> {
-        const body = new URLSearchParams({
-            grant_type: 'password',
-            client_id: this.clientId,
-            client_secret: this.clientSecret,
-            scope: this.scope,
-            username,
-            password,
-        });
+        const loginPayload = { username, password };
 
         return this.http
-            .post<TokenResponse>(this.tokenUrl, body.toString(), {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            })
+            .post<TokenResponse>('http://localhost:8082/api/login', loginPayload)
             .pipe(
                 map(tokens => {
                     this.storeTokens(tokens);
-                    this.storeCredentials(username, password); // 👈 Add this
+                    this.storeCredentials(username, password);
                     this.scheduleRefresh(tokens.expires_in);
                     return tokens;
                 }),
+
                 catchError((err: HttpErrorResponse) => throwError(() => err))
             );
+
     }
+
     private storeCredentials(email: string, password: string): void {
         localStorage.setItem('user_email', email);
         localStorage.setItem('user_password', password);
@@ -64,20 +58,42 @@ export class AuthService {
 
 
     logout() {
+        const current = this.currentUserSubject.value;
+        if (!current) {
+            this.clearSession();
+            return;
+        }
+
+        const body = { refreshToken: current.refresh_token };
+
+        this.http.post('http://localhost:8082/api/logout', body).subscribe({
+            next: () => {
+                this.clearSession();
+                this.router.navigate(['/login']);
+            },
+            error: err => {
+                console.error('Logout API failed:', err);
+                this.clearSession(); // fallback cleanup
+                this.router.navigate(['/login']);
+            }
+
+        });
+
+    }
+    get accessToken(): string | null {
+        return this.currentUserSubject.value?.access_token ?? null;
+    }
+
+    private clearSession() {
         localStorage.removeItem('auth_tokens');
         localStorage.removeItem('user_email');
         localStorage.removeItem('user_password');
         this.currentUserSubject.next(null);
         clearTimeout(this.tokenExpiryTimer);
-        this.router.navigate(['/login']);
     }
 
 
-    get accessToken(): string | null {
-    return this.currentUserSubject.value?.access_token ?? null;
-  }
-
-  private storeTokens(tokens: TokenResponse) {
+    private storeTokens(tokens: TokenResponse) {
     localStorage.setItem('auth_tokens', JSON.stringify(tokens));
     this.currentUserSubject.next(tokens);
   }
