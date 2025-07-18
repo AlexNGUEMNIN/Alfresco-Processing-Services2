@@ -259,7 +259,7 @@ export class TaskUsersComponent implements OnInit, OnDestroy {
         firstName: 'Jean',
         lastName: 'Dupont',
         email: 'jean.dupont@afriland.com',
-        role: 'Analyste',
+        role: 'operator',
         isActive: true,
         tasksCount: 8,
         lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000)
@@ -270,7 +270,7 @@ export class TaskUsersComponent implements OnInit, OnDestroy {
         firstName: 'Marie',
         lastName: 'Martin',
         email: 'marie.martin@afriland.com',
-        role: 'Manager',
+        role: 'supervisor',
         isActive: true,
         tasksCount: 12,
         lastActivity: new Date(Date.now() - 30 * 60 * 1000)
@@ -281,7 +281,7 @@ export class TaskUsersComponent implements OnInit, OnDestroy {
         firstName: 'Pierre',
         lastName: 'Durand',
         email: 'pierre.durand@afriland.com',
-        role: 'Superviseur',
+        role: 'supervisor',
         isActive: false,
         tasksCount: 3,
         lastActivity: new Date(Date.now() - 24 * 60 * 60 * 1000)
@@ -292,7 +292,7 @@ export class TaskUsersComponent implements OnInit, OnDestroy {
         firstName: 'Sophie',
         lastName: 'Legrand',
         email: 'sophie.legrand@afriland.com',
-        role: 'Analyste Senior',
+        role: 'admin',
         isActive: true,
         tasksCount: 15,
         lastActivity: new Date(Date.now() - 10 * 60 * 1000)
@@ -303,7 +303,7 @@ export class TaskUsersComponent implements OnInit, OnDestroy {
         firstName: 'Antoine',
         lastName: 'Robert',
         email: 'antoine.robert@afriland.com',
-        role: 'Opérateur',
+        role: 'operator',
         isActive: true,
         tasksCount: 6,
         lastActivity: new Date(Date.now() - 4 * 60 * 60 * 1000)
