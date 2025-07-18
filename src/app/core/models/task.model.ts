@@ -9,7 +9,7 @@ export interface Task {
   created: Date;
   dueDate?: Date;
   priority: number;
-  status: 'pending' | 'assigned' | 'overdue' | 'completed';
+  status: 'pending' | 'assigned' | 'overdue' | 'completed' | 'in-progress' | 'suspended';
   formKey?: string;
   variables?: { [key: string]: any };
   // ✅ Add these optional fields:
